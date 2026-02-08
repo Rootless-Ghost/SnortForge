@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnortForge — Snort Rule Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- ═══ Header ═══ -->
+    <header class="app-header">
+        <div class="header-brand">
+            <span class="header-icon">⚡</span>
+            <h1>SnortForge</h1>
+            <span class="header-version">v1.0.0</span>
+        </div>
+        <p class="header-tagline">Snort IDS/IPS Rule Generator &amp; Management Tool</p>
+    </header>
+
+    <!-- ═══ Navigation Tabs ═══ -->
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="builder">
+            <span class="tab-icon">⚡</span> Rule Builder
+        </button>
+        <button class="tab-btn" data-tab="manager">
+            <span class="tab-icon">📋</span> Rule Manager
+            <span class="tab-badge" id="ruleCount">0</span>
+        </button>
+        <button class="tab-btn" data-tab="templates">
+            <span class="tab-icon">📦</span> Templates
+        </button>
+    </nav>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- TAB 1: RULE BUILDER                    -->
+    <!-- ═══════════════════════════════════════ -->
+    <main class="tab-content active" id="tab-builder">
+
+        <!-- Rule Header -->
+        <section class="card">
+            <h2 class="card-title">Rule Header</h2>
+            <div class="form-row three-col">
+                <div class="form-group">
+                    <label for="action">Action</label>
+                    <select id="action">
+                        <option value="alert" selected>alert</option>
+                        <option value="log">log</option>
+                        <option value="pass">pass</option>
+                        <option value="drop">drop</option>
+                        <option value="reject">reject</option>
+                        <option value="sdrop">sdrop</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="protocol">Protocol</label>
+                    <select id="protocol">
+                        <option value="tcp" selected>tcp</option>
+                        <option value="udp">udp</option>
+                        <option value="icmp">icmp</option>
+                        <option value="ip">ip</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="direction">Direction</label>
+                    <select id="direction">
+                        <option value="->" selected>→  Unidirectional (->)</option>
+                        <option value="<>">↔  Bidirectional (<>)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label for="src_ip">Source IP</label>
+                    <input type="text" id="src_ip" value="any" placeholder="e.g., $HOME_NET, 192.168.1.0/24, any">
+                </div>
+                <div class="form-group">
+                    <label for="src_port">Source Port</label>
+                    <input type="text" id="src_port" value="any" placeholder="e.g., any, 80, 1024:65535">
+                </div>
+            </div>
+
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label for="dst_ip">Destination IP</label>
+                    <input type="text" id="dst_ip" value="any" placeholder="e.g., $EXTERNAL_NET, 10.0.0.0/8">
+                </div>
+                <div class="form-group">
+                    <label for="dst_port">Destination Port</label>
+                    <input type="text" id="dst_port" value="any" placeholder="e.g., $HTTP_PORTS, 443, 8080">
+                </div>
+            </div>
+        </section>
+
+        <!-- General Options -->
+        <section class="card">
+            <h2 class="card-title">General Options</h2>
+            <div class="form-group full-width">
+                <label for="msg">Alert Message <span class="required">*</span></label>
+                <input type="text" id="msg" placeholder="Descriptive alert message (required)">
+            </div>
+
+            <div class="form-row four-col">
+                <div class="form-group">
+                    <label for="sid">SID</label>
+                    <input type="number" id="sid" value="1000001" min="1" max="9999999">
+                </div>
+                <div class="form-group">
+                    <label for="rev">Revision</label>
+                    <input type="number" id="rev" value="1" min="1" max="999">
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <input type="number" id="priority" value="0" min="0" max="10" placeholder="0 = default">
+                </div>
+                <div class="form-group">
+                    <label for="classtype">Classtype</label>
+                    <select id="classtype">
+                        <option value="">— None —</option>
+                        <option value="attempted-admin">attempted-admin</option>
+                        <option value="attempted-user">attempted-user</option>
+                        <option value="web-application-attack">web-application-attack</option>
+                        <option value="attempted-recon">attempted-recon</option>
+                        <option value="trojan-activity">trojan-activity</option>
+                        <option value="attempted-dos">attempted-dos</option>
+                        <option value="successful-admin">successful-admin</option>
+                        <option value="policy-violation">policy-violation</option>
+                        <option value="shellcode-detect">shellcode-detect</option>
+                        <option value="misc-attack">misc-attack</option>
+                        <option value="denial-of-service">denial-of-service</option>
+                        <option value="network-scan">network-scan</option>
+                        <option value="suspicious-login">suspicious-login</option>
+                        <option value="default-login-attempt">default-login-attempt</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="reference">Reference</label>
+                <input type="text" id="reference" placeholder="e.g., cve,2024-1234 or url,example.com">
+            </div>
+        </section>
+
+        <!-- Detection Options -->
+        <section class="card">
+            <h2 class="card-title">Detection Options</h2>
+            <div class="form-group full-width">
+                <label for="content">Content Match</label>
+                <input type="text" id="content" placeholder="String or hex content to match (e.g., |FF|SMB or SELECT * FROM)">
+            </div>
+
+            <div class="form-row checkbox-row">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="content_nocase">
+                    <span>Case insensitive (nocase)</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="content_negated">
+                    <span>Negated match (!)</span>
+                </label>
+            </div>
+
+            <div class="form-row four-col">
+                <div class="form-group">
+                    <label for="depth">Depth</label>
+                    <input type="number" id="depth" value="0" min="0" placeholder="0 = none">
+                </div>
+                <div class="form-group">
+                    <label for="offset">Offset</label>
+                    <input type="number" id="offset" value="0" min="0" placeholder="0 = none">
+                </div>
+                <div class="form-group">
+                    <label for="distance">Distance</label>
+                    <input type="number" id="distance" value="0" min="0" placeholder="0 = none">
+                </div>
+                <div class="form-group">
+                    <label for="within">Within</label>
+                    <input type="number" id="within" value="0" min="0" placeholder="0 = none">
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="pcre">PCRE (Regex)</label>
+                <input type="text" id="pcre" placeholder="/regex_pattern/flags  (e.g., /SELECT.*FROM/i)">
+            </div>
+        </section>
+
+        <!-- Flow Options -->
+        <section class="card">
+            <h2 class="card-title">Flow Options</h2>
+            <div class="form-row checkbox-row flow-checkboxes">
+                <label class="checkbox-label"><input type="checkbox" id="flow_established"><span>established</span></label>
+                <label class="checkbox-label"><input type="checkbox" id="flow_to_server"><span>to_server</span></label>
+                <label class="checkbox-label"><input type="checkbox" id="flow_to_client"><span>to_client</span></label>
+                <label class="checkbox-label"><input type="checkbox" id="flow_from_server"><span>from_server</span></label>
+                <label class="checkbox-label"><input type="checkbox" id="flow_from_client"><span>from_client</span></label>
+                <label class="checkbox-label"><input type="checkbox" id="flow_stateless"><span>stateless</span></label>
+            </div>
+        </section>
+
+        <!-- Threshold -->
+        <section class="card">
+            <h2 class="card-title">Threshold <span class="optional-tag">Optional</span></h2>
+            <div class="form-row four-col">
+                <div class="form-group">
+                    <label for="threshold_type">Type</label>
+                    <select id="threshold_type">
+                        <option value="">— None —</option>
+                        <option value="limit">limit</option>
+                        <option value="threshold">threshold</option>
+                        <option value="both">both</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="threshold_track">Track</label>
+                    <select id="threshold_track">
+                        <option value="by_src">by_src</option>
+                        <option value="by_dst">by_dst</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="threshold_count">Count</label>
+                    <input type="number" id="threshold_count" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="threshold_seconds">Seconds</label>
+                    <input type="number" id="threshold_seconds" value="0" min="0">
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Preview -->
+        <section class="card preview-card">
+            <h2 class="card-title">Live Preview</h2>
+            <pre class="rule-preview" id="livePreview">alert tcp any any -> any any (sid:1000001; rev:1;)</pre>
+        </section>
+
+        <!-- Validation Output -->
+        <section class="card validation-card" id="validationCard" style="display:none;">
+            <h2 class="card-title">Validation Results</h2>
+            <div id="validationOutput"></div>
+        </section>
+
+        <!-- Action Buttons -->
+        <div class="action-bar">
+            <button class="btn btn-accent" id="btnValidate">⚡ Validate Rule</button>
+            <button class="btn btn-success" id="btnAddToManager">✚ Add to Manager</button>
+            <button class="btn btn-secondary" id="btnCopyRule">📋 Copy to Clipboard</button>
+            <button class="btn btn-danger" id="btnClearForm">✖ Clear Form</button>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- TAB 2: RULE MANAGER                    -->
+    <!-- ═══════════════════════════════════════ -->
+    <main class="tab-content" id="tab-manager">
+
+        <!-- Stats -->
+        <section class="stats-bar">
+            <div class="stat">
+                <span class="stat-value" id="statTotal">0</span>
+                <span class="stat-label">Total Rules</span>
+            </div>
+            <div class="stat stat-valid">
+                <span class="stat-value" id="statValid">0</span>
+                <span class="stat-label">Valid</span>
+            </div>
+            <div class="stat stat-invalid">
+                <span class="stat-value" id="statInvalid">0</span>
+                <span class="stat-label">Errors</span>
+            </div>
+        </section>
+
+        <!-- Rule Table -->
+        <section class="card table-card">
+            <div class="table-wrapper">
+                <table id="rulesTable">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
+                            <th>SID</th>
+                            <th>Action</th>
+                            <th>Protocol</th>
+                            <th>Source</th>
+                            <th>Destination</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rulesTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty-state" id="emptyState">
+                <span class="empty-icon">📋</span>
+                <p>No rules yet — build a rule or load a template to get started.</p>
+            </div>
+        </section>
+
+        <!-- Selected Preview -->
+        <section class="card" id="managerPreviewCard" style="display:none;">
+            <h2 class="card-title">Selected Rule</h2>
+            <pre class="rule-preview" id="managerPreview"></pre>
+        </section>
+
+        <!-- Manager Actions -->
+        <div class="action-bar">
+            <label class="btn btn-secondary file-upload-btn">
+                📥 Import .rules
+                <input type="file" id="importRulesFile" accept=".rules,.txt" hidden>
+            </label>
+            <label class="btn btn-secondary file-upload-btn">
+                📥 Import JSON
+                <input type="file" id="importJsonFile" accept=".json" hidden>
+            </label>
+            <button class="btn btn-accent" id="btnExportRules">📤 Export .rules</button>
+            <button class="btn btn-secondary" id="btnExportJson">📤 Export JSON</button>
+            <div class="action-spacer"></div>
+            <button class="btn btn-secondary" id="btnEditSelected">✏️ Edit</button>
+            <button class="btn btn-secondary" id="btnDuplicate">⊏ Duplicate</button>
+            <button class="btn btn-danger" id="btnDeleteSelected">🗑 Delete</button>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- TAB 3: TEMPLATES                       -->
+    <!-- ═══════════════════════════════════════ -->
+    <main class="tab-content" id="tab-templates">
+
+        <!-- Category Filter -->
+        <section class="card">
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label for="templateCategory">Filter by Category</label>
+                    <select id="templateCategory">
+                        <option value="all">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="display:flex; align-items:flex-end;">
+                    <span class="template-count" id="templateCountLabel">{{ templates|length }} templates available</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Template Cards -->
+        <div class="template-grid" id="templateGrid">
+            {% for t in templates %}
+            <div class="template-card" data-category="{{ t.category }}" data-name="{{ t.name }}">
+                <span class="template-category-badge">{{ t.category }}</span>
+                <h3 class="template-name">{{ t.name }}</h3>
+                <p class="template-desc">{{ t.description }}</p>
+                <pre class="template-rule-preview">{{ t.rule_text }}</pre>
+                <div class="template-actions">
+                    <button class="btn btn-accent btn-sm template-load-btn" data-rule='{{ t.rule_data | tojson }}'>✏️ Load into Builder</button>
+                    <button class="btn btn-success btn-sm template-add-btn" data-rule='{{ t.rule_data | tojson }}'>✚ Add to Manager</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- ═══ Toast Notifications ═══ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ═══ Footer ═══ -->
+    <footer class="app-footer">
+        <p>SnortForge v1.0.0 — Built by <a href="https://github.com/Rootless-Ghost" target="_blank">Rootless-Ghost</a></p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
