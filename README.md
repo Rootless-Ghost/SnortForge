@@ -21,13 +21,23 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 
 ---
 
-##  Screenshots
 
-> *Add screenshots to the `screenshots/` directory after first launch.*
+## 📸 Screenshots
 
-| Rule Builder | Rule Manager | Templates |
-|:---:|:---:|:---:|
-| *Build rules visually* | *Manage your ruleset* | *Start from templates* |
+### Rule Builder
+*Build Snort rules visually with a live-updating preview*
+
+![Rule Builder](screenshots/rule_builder.png)
+
+### Rule Manager
+*Manage, import, export, and validate your entire ruleset*
+
+![Rule Manager](screenshots/rule_manager.png)
+
+### Templates
+*Start from 12 pre-built detection templates across 5 categories*
+
+![Templates](screenshots/templates.png)
 
 ---
 
