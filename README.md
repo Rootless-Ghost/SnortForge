@@ -1,4 +1,4 @@
-# ⚡ SnortForge
+# SnortForge
 
 **Snort IDS/IPS Rule Generator & Management Tool**
 
@@ -6,7 +6,7 @@ A web-based application for building, validating, managing, and exporting Snort 
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 SnortForge streamlines the creation and management of Snort IDS/IPS rules. Whether you're writing custom detection rules for a SOC, building a ruleset for a home lab, or studying for security certifications — SnortForge provides a structured, error-checked workflow.
 
@@ -21,7 +21,7 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 > *Add screenshots to the `screenshots/` directory after first launch.*
 
@@ -31,7 +31,7 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 
 ---
 
-## 🚀 Installation
+##  Installation
 
 ### Prerequisites
 
@@ -65,7 +65,7 @@ Then open your browser to **http://127.0.0.1:5000**
 
 ---
 
-## 🛠️ Usage
+##  Usage
 
 ### Rule Builder
 
@@ -98,7 +98,7 @@ Then open your browser to **http://127.0.0.1:5000**
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 SnortForge/
@@ -124,7 +124,7 @@ SnortForge/
 
 ---
 
-## 🔧 Technical Details
+##  Technical Details
 
 | Component | Technology |
 |-----------|-----------|
@@ -138,7 +138,7 @@ SnortForge/
 
 ---
 
-## 🗺️ Roadmap
+##  Roadmap
 
 - [ ] Multi-content rule support (chained content matches)
 - [ ] Snort 3 syntax output mode
@@ -149,17 +149,6 @@ SnortForge/
 
 ---
 
-## 🤝 Contributing
-
-Contributions welcome! Please open an issue or submit a pull request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/new-feature`)
-3. Commit your changes (`git commit -m 'Add new feature'`)
-4. Push to the branch (`git push origin feature/new-feature`)
-5. Open a Pull Request
-
----
 
 ## 📜 License
 
@@ -170,10 +159,3 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 ## 👤 Author
 
 **Rootless-Ghost**
-
-- GitHub: [@Rootless-Ghost](https://github.com/Rootless-Ghost)
-- Twitter: [@Rootless_Ghost](https://twitter.com/Rootless_Ghost)
-
----
-
-> *Built for the cybersecurity community — from the lab to production.*
