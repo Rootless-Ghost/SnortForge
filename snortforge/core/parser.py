@@ -3,7 +3,10 @@ SnortForge - Rule Parser
 """
 
 import re
+import logging
 from .rule import SnortRule
+
+logger = logging.getLogger(__name__)
 
 
 class ParseError(Exception):
@@ -111,10 +114,13 @@ def parse_rules_file(filepath):
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
+                # Controlled, user-friendly parse error message
             try:
                 rules.append(parse_rule(line))
             except ParseError as e:
                 errors.append(f"Line {line_num}: {str(e)}")
-            except Exception as e:
-                errors.append(f"Line {line_num}: {str(e)}")
+            except Exception:
+                # Log detailed exception server-side, but return a generic message to the client
+                logger.exception("Unexpected error while parsing rule on line %d", line_num)
+                errors.append(f"Line {line_num}: Internal parsing error.")
     return rules, errors
