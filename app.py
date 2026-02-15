@@ -10,6 +10,7 @@ from datetime import datetime
 from flask import (
     Flask, render_template, request, jsonify, send_file, session
 )
+import logging
 from snortforge.core.rule import SnortRule
 from snortforge.core.validator import validate_rule
 from snortforge.core.templates_data import (
@@ -22,6 +23,8 @@ app = Flask(
     template_folder="snortforge/templates",
     static_folder="snortforge/static",
 )
+
+logger = logging.getLogger(__name__)
 app.secret_key = os.urandom(24)
 
 
@@ -174,8 +177,12 @@ def api_import_rules():
             "errors": errors,
             "count": len(rules),
         })
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+    except Exception:
+        logger.exception("Error importing rules file")
+        return jsonify({
+            "success": False,
+            "error": "Failed to import rules file."
+        }), 400
     finally:
         os.unlink(tmp.name)
 
@@ -194,8 +201,12 @@ def api_import_json():
             "rules": rules,
             "count": len(rules),
         })
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+    except Exception:
+        logger.exception("Error importing JSON rules")
+        return jsonify({
+            "success": False,
+            "error": "Failed to import JSON rules."
+        }), 400
 
 
 if __name__ == "__main__":
