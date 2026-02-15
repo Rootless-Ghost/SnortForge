@@ -1,7 +1,8 @@
-<p align="center">
-  
+<div align="center">
+
 # 🐽 SnortForge
 
+</div>
 <p align="center">
   <strong>Snort IDS/IPS Rule Generator & Management Tool</strong>
 </p>
