@@ -1,4 +1,4 @@
-# ⚡ SnortForge
+#  SnortForge
 
 <p align="center">
   <strong>Snort IDS/IPS Rule Generator & Management Tool</strong>
@@ -18,7 +18,7 @@
 
 ---
 
-## 🎯 Overview
+##  Overview
 
 SnortForge streamlines the creation and management of Snort IDS/IPS rules. Whether you're writing custom detection rules for a SOC environment, building a ruleset for a home lab, or studying for security certifications — SnortForge provides a structured, error-checked workflow for rule development.
 
@@ -33,7 +33,7 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 ### Rule Builder
 *Build Snort rules visually with a live-updating preview*
@@ -52,7 +52,7 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 
 ---
 
-## 🚀 Installation
+##  Installation
 
 ### Prerequisites
 
@@ -86,7 +86,7 @@ Then open your browser to **http://127.0.0.1:5000**
 
 ---
 
-## 🛠️ Usage
+##  Usage
 
 ### Rule Builder
 
@@ -121,7 +121,7 @@ Browse **12 pre-built detection templates** organized by category:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 SnortForge/
@@ -147,7 +147,7 @@ SnortForge/
 
 ---
 
-## 🔧 Technical Details
+## Technical Details
 
 | Component | Technology |
 |-----------|-----------|
@@ -177,7 +177,7 @@ SnortForge/
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] Multi-content rule support (chained content matches)
 - [ ] Snort 3 syntax output mode
@@ -188,7 +188,7 @@ SnortForge/
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
