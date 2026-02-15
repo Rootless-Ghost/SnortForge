@@ -59,8 +59,17 @@ def api_validate():
         result = validate_rule(rule)
         result["rule_text"] = rule.build()
         return jsonify(result)
-    except Exception as e:
+    except ParseError as e:
+        # Known parse/validation error; message is safe to return to the client.
         return jsonify({"is_valid": False, "errors": [str(e)], "warnings": []}), 400
+    except Exception as e:
+        # Unexpected internal error; log details and return a generic error message.
+        logger.exception("Unexpected error during rule validation")
+        return jsonify({
+            "is_valid": False,
+            "errors": ["An internal error occurred while validating the rule."],
+            "warnings": [],
+        }), 500
 
 
 # ── API: Get Templates ──
