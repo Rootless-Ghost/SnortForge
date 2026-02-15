@@ -1,4 +1,4 @@
-#  SnortForge
+# 🐽 SnortForge
 
 <p align="center">
   <strong>Snort IDS/IPS Rule Generator & Management Tool</strong>
