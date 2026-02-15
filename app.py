@@ -65,8 +65,13 @@ def api_validate():
         result["rule_text"] = rule.build()
         return jsonify(result)
     except ParseError as e:
-        # Known parse/validation error; message is safe to return to the client.
-        return jsonify({"is_valid": False, "errors": [str(e)], "warnings": []}), 400
+        # Known parse/validation error; log details and return a safe, generic message.
+        logger.warning("Rule validation failed with ParseError", exc_info=e)
+        return jsonify({
+            "is_valid": False,
+            "errors": ["The provided rule is invalid. Please check the syntax and parameters."],
+            "warnings": [],
+        }), 400
     except Exception as e:
         # Unexpected internal error; log details and return a generic error message.
         logger.exception("Unexpected error during rule validation")
