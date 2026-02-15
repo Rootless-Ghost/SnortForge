@@ -199,4 +199,8 @@ def api_import_json():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # Debug mode should not be enabled by default in production.
+    # Enable it explicitly for development by setting FLASK_DEBUG=1 (or "true").
+    debug_flag = os.getenv("FLASK_DEBUG", "0").lower()
+    debug = debug_flag in ("1", "true", "yes", "on")
+    app.run(debug=debug, port=5000)
