@@ -194,6 +194,8 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ---
 
-## 👤 Author
+<div align="center">
 
-**Rootless-Ghost**
+Built by [Rootless-Ghost](https://github.com/Rootless-Ghost) 
+
+</div>
