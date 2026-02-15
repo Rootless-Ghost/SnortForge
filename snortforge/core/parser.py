@@ -118,7 +118,9 @@ def parse_rules_file(filepath):
             try:
                 rules.append(parse_rule(line))
             except ParseError as e:
-                errors.append(f"Line {line_num}: {str(e)}")
+                # Log the detailed parse error server-side, but return a generic message to the client
+                logger.warning("Parse error on line %d: %s", line_num, str(e))
+                errors.append(f"Line {line_num}: Invalid rule syntax.")
             except Exception:
                 # Log detailed exception server-side, but return a generic message to the client
                 logger.exception("Unexpected error while parsing rule on line %d", line_num)
