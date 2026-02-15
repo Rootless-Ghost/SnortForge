@@ -12,9 +12,8 @@ If you discover a security vulnerability in SnortForge, please report it respons
 
 **DO NOT** open a public GitHub issue for security vulnerabilities.
 
-Instead, please report security issues via:
+**How to report:**
 - **GitHub Security Advisories**: Use the "Report a vulnerability" button in the Security tab
-- **Email**:
 
 **What to include in your report:**
 - Description of the vulnerability
