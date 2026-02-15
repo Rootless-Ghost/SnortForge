@@ -46,7 +46,12 @@ def api_build():
         rule = SnortRule.from_dict(data)
         return jsonify({"success": True, "rule_text": rule.build()})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+        # Unexpected internal error; log details and return a generic error message.
+        logger.exception("Unexpected error during rule build")
+        return jsonify({
+            "success": False,
+            "error": "An internal error occurred while building the rule.",
+        }), 500
 
 
 # ── API: Validate Rule ──
