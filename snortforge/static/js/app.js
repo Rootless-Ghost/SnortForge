@@ -50,7 +50,7 @@ function switchTab(tabName) {
 const BUILDER_FIELDS = [
     "action", "protocol", "direction", "src_ip", "src_port",
     "dst_ip", "dst_port", "msg", "sid", "rev", "priority",
-    "classtype", "reference", "content", "content_nocase",
+    "classtype", "content", "content_nocase",
     "content_negated", "depth", "offset", "distance", "within",
     "pcre", "threshold_type", "threshold_track", "threshold_count",
     "threshold_seconds",
@@ -78,6 +78,12 @@ function initBuilder() {
     document.getElementById("btnAddToManager").addEventListener("click", addToManager);
     document.getElementById("btnCopyRule").addEventListener("click", copyRule);
     document.getElementById("btnClearForm").addEventListener("click", clearForm);
+
+    // Reference add/remove
+    document.getElementById("btnAddRef").addEventListener("click", addReference);
+    document.getElementById("ref_value").addEventListener("keydown", e => {
+        if (e.key === "Enter") { e.preventDefault(); addReference(); }
+    });
 }
 
 function getFormData() {
@@ -111,7 +117,7 @@ function getFormData() {
         rev: val("rev"),
         classtype: val("classtype"),
         priority: val("priority"),
-        reference: val("reference"),
+        references: getReferences(),
         content: val("content"),
         content_nocase: val("content_nocase"),
         content_negated: val("content_negated"),
@@ -148,7 +154,11 @@ function buildRuleText(data) {
     if (data.pcre) opts.push(`pcre:"${data.pcre}"`);
     if (data.classtype) opts.push(`classtype:${data.classtype}`);
     if (data.priority > 0) opts.push(`priority:${data.priority}`);
-    if (data.reference) opts.push(`reference:${data.reference}`);
+    if (data.references && data.references.length > 0) {
+        data.references.forEach(ref => {
+            if (ref) opts.push(`reference:${ref}`);
+        });
+    }
     if (data.metadata) opts.push(`metadata:${data.metadata}`);
     if (data.threshold_type && data.threshold_count > 0 && data.threshold_seconds > 0) {
         opts.push(`threshold:type ${data.threshold_type}, track ${data.threshold_track}, count ${data.threshold_count}, seconds ${data.threshold_seconds}`);
@@ -249,7 +259,7 @@ function clearForm() {
     document.getElementById("rev").value = "1";
     document.getElementById("priority").value = "0";
     document.getElementById("classtype").value = "";
-    document.getElementById("reference").value = "";
+    clearReferences();
     document.getElementById("content").value = "";
     document.getElementById("content_nocase").checked = false;
     document.getElementById("content_negated").checked = false;
@@ -288,7 +298,7 @@ function loadRuleIntoBuilder(ruleData) {
     setVal("rev", ruleData.rev);
     setVal("priority", ruleData.priority);
     setVal("classtype", ruleData.classtype);
-    setVal("reference", ruleData.reference || "");
+    loadReferences(ruleData.references || ruleData.reference || []);
     setVal("content", ruleData.content);
     setVal("content_nocase", ruleData.content_nocase);
     setVal("content_negated", ruleData.content_negated);
@@ -570,6 +580,73 @@ function initTemplates() {
             toast(`Template added — SID:${ruleData.sid}`, "success");
         });
     });
+}
+
+
+/* ═══════════════════════════════════════════════
+   REFERENCES
+   ═══════════════════════════════════════════════ */
+
+// In-memory reference list for the builder
+const _refs = [];
+
+function addReference() {
+    const typeEl = document.getElementById("ref_type");
+    const valueEl = document.getElementById("ref_value");
+    const value = valueEl.value.trim();
+    if (!value) { toast("Enter a reference value", "error"); return; }
+
+    const ref = `${typeEl.value},${value}`;
+    _refs.push(ref);
+    valueEl.value = "";
+    renderReferences();
+    updatePreview();
+}
+
+function removeReference(index) {
+    _refs.splice(index, 1);
+    renderReferences();
+    updatePreview();
+}
+
+function getReferences() {
+    return [..._refs];
+}
+
+function clearReferences() {
+    _refs.length = 0;
+    renderReferences();
+}
+
+function loadReferences(refs) {
+    _refs.length = 0;
+    // Handle backward compat: old single string or new array
+    if (typeof refs === "string" && refs) {
+        _refs.push(refs);
+    } else if (Array.isArray(refs)) {
+        refs.forEach(r => { if (r) _refs.push(r); });
+    }
+    renderReferences();
+}
+
+function renderReferences() {
+    const list = document.getElementById("refList");
+    if (_refs.length === 0) {
+        list.innerHTML = "";
+        return;
+    }
+    const typeLabels = {
+        cve: "CVE", url: "URL", bugtraq: "Bugtraq", nessus: "Nessus",
+        arachnids: "Arachnids", mcafee: "McAfee", osvdb: "OSVDB",
+        msb: "MSB", system: "System",
+    };
+    list.innerHTML = _refs.map((ref, i) => {
+        const comma = ref.indexOf(",");
+        const rType = comma > -1 ? ref.substring(0, comma) : ref;
+        const rValue = comma > -1 ? ref.substring(comma + 1) : "";
+        const label = typeLabels[rType] || rType.toUpperCase();
+        return `<span class="ref-tag"><strong>${escapeHtml(label)}</strong> ${escapeHtml(rValue)}<button type="button" class="ref-remove" onclick="removeReference(${i})">✕</button></span>`;
+    }).join("");
 }
 
 
