@@ -138,8 +138,23 @@
             </div>
 
             <div class="form-group full-width">
-                <label for="reference">Reference</label>
-                <input type="text" id="reference" placeholder="e.g., cve,2024-1234 or url,example.com">
+                <label>References <span class="optional-tag">Optional</span></label>
+                <div class="ref-input-row">
+                    <select id="ref_type">
+                        <option value="cve">CVE</option>
+                        <option value="url">URL</option>
+                        <option value="bugtraq">Bugtraq</option>
+                        <option value="nessus">Nessus</option>
+                        <option value="arachnids">Arachnids</option>
+                        <option value="mcafee">McAfee</option>
+                        <option value="osvdb">OSVDB</option>
+                        <option value="msb">MSB</option>
+                        <option value="system">System</option>
+                    </select>
+                    <input type="text" id="ref_value" placeholder="e.g., 2024-1234 or www.example.com/advisory">
+                    <button type="button" class="btn btn-accent btn-sm" id="btnAddRef">+ Add</button>
+                </div>
+                <div class="ref-list" id="refList"></div>
             </div>
         </section>
 
