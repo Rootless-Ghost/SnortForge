@@ -34,6 +34,7 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 - **Rule Manager** — Bulk operations: edit, duplicate, delete, import, export
 - **Import/Export** — Read `.rules` files and export for direct Snort deployment
 - **Dark Theme** — Clean, spacious interface built for extended use
+- **Multiple References** — Add CVE, Bugtraq, URL, and other reference types with structured input and validation
 
 ---
 
@@ -102,6 +103,7 @@ Then open your browser to **http://127.0.0.1:5000**
 6. Watch the **live preview** update as you type
 7. Click **Validate** to check for errors
 8. Click **Add to Manager** to store the rule
+9. Add **references** (CVE, URL, Bugtraq, etc.) using the type dropdown and value field
 
 ### Rule Manager
 
@@ -183,6 +185,7 @@ SnortForge/
 
 ## Roadmap
 
+- ☑ Multiple reference support (CVE, Bugtraq, URL, OSVDB, and more)
 - [ ] Multi-content rule support (chained content matches)
 - [ ] Snort 3 syntax output mode
 - [ ] Rule performance scoring
