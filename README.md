@@ -185,7 +185,7 @@ SnortForge/
 
 ## Roadmap
 
-- ☑ Multiple reference support (CVE, Bugtraq, URL, OSVDB, and more)
+☑ Multiple reference support (CVE, Bugtraq, URL, OSVDB, and more)
 - [ ] Multi-content rule support (chained content matches)
 - [ ] Snort 3 syntax output mode
 - [ ] Rule performance scoring
