@@ -3,7 +3,7 @@ SnortForge - Snort Rule Data Model
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import List, Optional
 
 
 @dataclass
@@ -23,7 +23,7 @@ class SnortRule:
     rev: int = 1
     classtype: str = ""
     priority: int = 0
-    reference: str = ""
+    references: List[str] = field(default_factory=list)
 
     content: str = ""
     content_nocase: bool = False
@@ -80,8 +80,9 @@ class SnortRule:
             opts.append(f"classtype:{self.classtype}")
         if self.priority > 0:
             opts.append(f"priority:{self.priority}")
-        if self.reference:
-            opts.append(f"reference:{self.reference}")
+        for ref in self.references:
+            if ref:
+                opts.append(f"reference:{ref}")
         if self.metadata:
             opts.append(f"metadata:{self.metadata}")
         if self.threshold_type and self.threshold_count > 0 and self.threshold_seconds > 0:
@@ -103,7 +104,8 @@ class SnortRule:
             "dst_ip": self.dst_ip, "dst_port": self.dst_port,
             "msg": self.msg, "sid": self.sid, "rev": self.rev,
             "classtype": self.classtype, "priority": self.priority,
-            "reference": self.reference, "content": self.content,
+            "references": self.references,
+            "content": self.content,
             "content_nocase": self.content_nocase,
             "content_negated": self.content_negated,
             "pcre": self.pcre, "depth": self.depth, "offset": self.offset,
@@ -120,6 +122,11 @@ class SnortRule:
     def from_dict(cls, data: dict) -> "SnortRule":
         rule = cls()
         for key, value in data.items():
+            # Backward compat: accept old "reference" string key
+            if key == "reference" and isinstance(value, str):
+                if value:
+                    rule.references = [value]
+                continue
             if hasattr(rule, key):
                 setattr(rule, key, value)
         return rule
