@@ -27,6 +27,10 @@ VALID_FLOW_OPTIONS = [
     "established", "not_established", "stateless",
     "no_stream", "only_stream", "no_frag", "only_frag",
 ]
+VALID_REFERENCE_TYPES = [
+    "cve", "url", "bugtraq", "nessus", "arachnids",
+    "mcafee", "osvdb", "msb", "system",
+]
 
 IP_PATTERN = re.compile(
     r'^(any|\$\w+|!?\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d{1,2})?'
@@ -104,6 +108,26 @@ def validate_rule(rule: SnortRule) -> dict:
     # Classtype
     if rule.classtype and rule.classtype not in VALID_CLASSTYPES:
         warnings.append(f"Classtype '{rule.classtype}' is non-standard.")
+
+    # References
+    for ref in rule.references:
+        if not ref:
+            continue
+        if "," not in ref:
+            errors.append(f"Invalid reference '{ref}' — must be in format: type,value (e.g., cve,2024-1234).")
+            continue
+        ref_type = ref.split(",", 1)[0].strip().lower()
+        ref_value = ref.split(",", 1)[1].strip()
+        if ref_type not in VALID_REFERENCE_TYPES:
+            warnings.append(
+                f"Reference type '{ref_type}' is non-standard. "
+                f"Known types: {', '.join(VALID_REFERENCE_TYPES)}."
+            )
+        if not ref_value:
+            errors.append(f"Reference '{ref}' is missing a value after the type.")
+        # CVE format check
+        if ref_type == "cve" and not re.match(r'^\d{4}-\d{4,}$', ref_value):
+            warnings.append(f"CVE reference '{ref_value}' may not match standard format (YYYY-NNNNN).")
 
     # PCRE
     if rule.pcre:
