@@ -29,12 +29,15 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 ### Key Capabilities
 
 - **Visual Rule Builder** — Form-based rule creation with real-time live preview
+- **Inline Help Tooltips** — Hover `?` icons explain detection options, flow settings, and threshold behavior
 - **Syntax Validation** — Server-side validation catches errors and suggests best practices before deployment
 - **12 Detection Templates** — Pre-built rules for SQL injection, XSS, brute force, port scans, reverse shells, and more
 - **Rule Manager** — Bulk operations: edit, duplicate, delete, import, export
 - **Import/Export** — Read `.rules` files and export for direct Snort deployment
-- **Dark Theme** — Clean, spacious interface built for extended use
+- **PCRE Flag Checkboxes** — Set regex flags visually instead of typing `/pattern/flags` manually
+- **HTTP URI Matching** — Restrict content matches to the request URI for web attack detection
 - **Multiple References** — Add CVE, Bugtraq, URL, and other reference types with structured input and validation
+- **Dark Theme** — Clean, spacious interface built for extended use
 
 ---
 
@@ -105,6 +108,8 @@ Then open your browser to **http://127.0.0.1:5000**
 8. Click **Add to Manager** to store the rule
 9. Add **references** (CVE, URL, Bugtraq, etc.) using the type dropdown and value field
 
+> **Tip:** Hover the `?` icons next to any detection option for a quick explanation of what it does and when to use it.
+
 ### Rule Manager
 
 - View all rules with validation status at a glance
@@ -136,6 +141,7 @@ SnortForge's Rule Builder includes several content matching modifiers that contr
 |--------|-------------|-------------|
 | **Case Insensitive** | `nocase` | Match content regardless of uppercase/lowercase. `content:"GET"; nocase;` matches `GET`, `get`, `Get`, etc. |
 | **Negated Match** | `content:!"...";` | Alert when the specified content is **not found** in the packet. Useful for detecting the *absence* of expected data. |
+| **HTTP URI** | `http_uri` | Only match content within the HTTP request URI (path and query string). Narrows scope for better performance and fewer false positives. |
 
 #### Negated Match — When to Use It
 
