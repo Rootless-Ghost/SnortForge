@@ -190,10 +190,7 @@ body {
 .card-title {
     font-size: 1.15rem;
     font-weight: 600;
-    background: linear-gradient(135deg, #89b4fa 0%, #b4d0fb 50%, #bb9af7 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ffffff;
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border);
@@ -228,7 +225,7 @@ body {
 label {
     font-size: 0.85rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: #e0a85e;
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
@@ -243,7 +240,7 @@ select,
 textarea {
     font-family: var(--font-body);
     font-size: 1rem;
-    color: #e2e8f5;
+    color: #e8b66d;
     background-color: var(--bg-input);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
