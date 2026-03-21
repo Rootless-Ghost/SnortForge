@@ -187,6 +187,15 @@ content:"GET"; depth:3; content:".php"; distance:1; within:15;
 - **Precision** — Prevents false positives by ensuring content only matches in the expected location (e.g., matching `admin` in the URI path, not in the page body)
 - **Chained detection** — `distance` and `within` let you match multiple content strings in a specific order and proximity, which is critical for detecting multi-stage attack patterns
 
+### PCRE Flags
+ 
+| Flag | Modifier | Description |
+|------|----------|-------------|
+| **nocase** | `/i` | Case-insensitive matching |
+| **dotall** | `/s` | Dot (`.`) matches any character including newlines |
+| **multiline** | `/m` | `^` and `$` match start/end of each line, not just the string |
+| **extended** | `/x` | Unescaped whitespace ignored, `#` starts comments |
+
 ### Putting It All Together — Example Rule
 
 Detect a potential SQL injection attempt in an HTTP POST body:
@@ -262,8 +271,11 @@ SnortForge/
 ---
 
 ## Roadmap
-
+ 
 - [x] Multiple reference support (CVE, Bugtraq, URL, OSVDB, and more)
+- [x] Inline help tooltips for detection options
+- [x] PCRE flag checkboxes
+- [x] HTTP URI content modifier
 - [ ] Multi-content rule support (chained content matches)
 - [ ] Snort 3 syntax output mode
 - [ ] Rule performance scoring
