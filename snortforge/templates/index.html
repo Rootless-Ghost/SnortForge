@@ -185,6 +185,11 @@
                     <span>HTTP URI</span>
                     <span class="tooltip-trigger" data-tooltip="Only match content within the HTTP request URI (the path and query string). Adds 'http_uri' to the rule. Improves performance by narrowing the search scope and reduces false positives from matching body content.">?</span>
                 </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="content_http_header">
+                    <span>HTTP Header</span>
+                    <span class="tooltip-trigger" data-tooltip="Only match content within HTTP headers (User-Agent, Host, Cookie, Referer, etc.). Adds 'http_header' to the rule. Essential for detecting malware callbacks, C2 beacons, and suspicious user-agent strings.">?</span>
+                </label>
             </div>
 
             <div class="form-row four-col">
