@@ -52,6 +52,11 @@ html {
 body {
     font-family: var(--font-body);
     background-color: var(--bg-primary);
+    background-image:
+        radial-gradient(ellipse 80% 60% at 10% 90%, rgba(122, 162, 247, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 10%, rgba(187, 154, 247, 0.05) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(122, 162, 247, 0.03) 0%, transparent 50%);
+    background-attachment: fixed;
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
@@ -185,7 +190,10 @@ body {
 .card-title {
     font-size: 1.15rem;
     font-weight: 600;
-    color: var(--accent);
+    background: linear-gradient(135deg, #89b4fa 0%, #b4d0fb 50%, #bb9af7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border);
@@ -235,7 +243,7 @@ select,
 textarea {
     font-family: var(--font-body);
     font-size: 1rem;
-    color: var(--text-primary);
+    color: #e2e8f5;
     background-color: var(--bg-input);
     border: 1.5px solid var(--border);
     border-radius: var(--radius);
@@ -900,10 +908,10 @@ tbody td:first-child {
    ═══════════════════════════════════════════════ */
 
 .pcre-flags-row {
-    padding: 0.25rem 0;
-    background: none;
-    border: none;
-    border-radius: 0;
+    padding: 0.75rem 1rem;
+    background: rgba(38, 40, 57, 0.5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     margin-top: -0.5rem;
     gap: 1.25rem;
 }
