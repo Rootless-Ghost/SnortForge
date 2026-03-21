@@ -96,7 +96,7 @@ body {
 }
 
 .header-tagline {
-    color: var(--text-secondary);
+    color: #e0a85e;
     font-size: 0.95rem;
     font-weight: 300;
 }
