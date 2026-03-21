@@ -162,7 +162,10 @@
         <section class="card">
             <h2 class="card-title">Detection Options</h2>
             <div class="form-group full-width">
-                <label for="content">Content Match</label>
+                <label for="content">
+                    Content Match
+                    <span class="tooltip-trigger" data-tooltip="String or hex pattern to match in the packet payload. Use pipe notation for hex bytes: |FF|SMB. This becomes the content keyword in the Snort rule.">?</span>
+                </label>
                 <input type="text" id="content" placeholder="String or hex content to match (e.g., |FF|SMB or SELECT * FROM)">
             </div>
 
@@ -170,35 +173,81 @@
                 <label class="checkbox-label">
                     <input type="checkbox" id="content_nocase">
                     <span>Case insensitive (nocase)</span>
+                    <span class="tooltip-trigger" data-tooltip="Match content regardless of uppercase or lowercase. Adds the 'nocase' modifier to the rule. Example: 'GET' will also match 'get', 'Get', etc.">?</span>
                 </label>
                 <label class="checkbox-label">
                     <input type="checkbox" id="content_negated">
                     <span>Negated match (!)</span>
+                    <span class="tooltip-trigger" data-tooltip="Invert the match — alert when this content is NOT found in the packet. Generates content:!&quot;...&quot; in the rule. Useful for detecting missing headers, protocol violations, or absent expected data.">?</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="content_http_uri">
+                    <span>HTTP URI</span>
+                    <span class="tooltip-trigger" data-tooltip="Only match content within the HTTP request URI (the path and query string). Adds 'http_uri' to the rule. Improves performance by narrowing the search scope and reduces false positives from matching body content.">?</span>
                 </label>
             </div>
 
             <div class="form-row four-col">
                 <div class="form-group">
-                    <label for="depth">Depth</label>
-                    <input type="number" id="depth" value="0" min="0" placeholder="0 = none">
+                    <label for="depth">
+                        Depth
+                        <span class="tooltip-trigger" data-tooltip="Only search within the first N bytes of the payload (or from the last content match). Limits the search window to improve performance and reduce false positives. Set 0 to disable.">?</span>
+                    </label>
+                    <input type="number" id="depth" value="0" min="0" placeholder="Bytes from start">
                 </div>
                 <div class="form-group">
-                    <label for="offset">Offset</label>
-                    <input type="number" id="offset" value="0" min="0" placeholder="0 = none">
+                    <label for="offset">
+                        Offset
+                        <span class="tooltip-trigger" data-tooltip="Skip the first N bytes before searching for this content. Useful for ignoring known headers or fixed-length fields. Set 0 to disable.">?</span>
+                    </label>
+                    <input type="number" id="offset" value="0" min="0" placeholder="Bytes to skip">
                 </div>
                 <div class="form-group">
-                    <label for="distance">Distance</label>
-                    <input type="number" id="distance" value="0" min="0" placeholder="0 = none">
+                    <label for="distance">
+                        Distance
+                        <span class="tooltip-trigger" data-tooltip="Used in chained content matches. After the previous match, skip at least N bytes before searching for this content. Ensures patterns appear in the expected order with spacing. Set 0 to disable.">?</span>
+                    </label>
+                    <input type="number" id="distance" value="0" min="0" placeholder="Bytes after prev match">
                 </div>
                 <div class="form-group">
-                    <label for="within">Within</label>
-                    <input type="number" id="within" value="0" min="0" placeholder="0 = none">
+                    <label for="within">
+                        Within
+                        <span class="tooltip-trigger" data-tooltip="Used in chained content matches. After the previous match, search only within the next N bytes. Pairs with distance for tight, precise matching. Set 0 to disable.">?</span>
+                    </label>
+                    <input type="number" id="within" value="0" min="0" placeholder="Search window size">
                 </div>
             </div>
 
             <div class="form-group full-width">
-                <label for="pcre">PCRE (Regex)</label>
-                <input type="text" id="pcre" placeholder="/regex_pattern/flags  (e.g., /SELECT.*FROM/i)">
+                <label for="pcre">
+                    PCRE (Regex)
+                    <span class="tooltip-trigger" data-tooltip="Perl-Compatible Regular Expression for advanced pattern matching. Enter the pattern only (without surrounding slashes and flags) — use the flag checkboxes below to set modifiers. Or enter the full /pattern/flags format to override.">?</span>
+                </label>
+                <input type="text" id="pcre" placeholder="regex pattern (e.g., SELECT.*FROM) — flags are set below">
+            </div>
+
+            <div class="form-row checkbox-row pcre-flags-row">
+                <span class="pcre-flags-label">PCRE Flags:</span>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="pcre_flag_i">
+                    <span>nocase /i</span>
+                    <span class="tooltip-trigger" data-tooltip="Case-insensitive matching. 'SELECT' matches 'select', 'Select', etc. Most common flag for detection rules.">?</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="pcre_flag_s">
+                    <span>dotall /s</span>
+                    <span class="tooltip-trigger" data-tooltip="Makes the dot (.) metacharacter match any character including newlines. Without this flag, dot matches everything except \\n. Useful for patterns spanning multiple lines.">?</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="pcre_flag_m">
+                    <span>multiline /m</span>
+                    <span class="tooltip-trigger" data-tooltip="Makes ^ and $ match the start and end of each line, not just the start and end of the entire string. Useful when payload contains multiple lines of text.">?</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="pcre_flag_x">
+                    <span>extended /x</span>
+                    <span class="tooltip-trigger" data-tooltip="Extended mode — unescaped whitespace is ignored and # starts a comment. Allows more readable regex patterns. Rarely used in Snort rules.">?</span>
+                </label>
             </div>
         </section>
 
