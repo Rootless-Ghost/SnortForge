@@ -773,3 +773,161 @@ tbody td:first-child {
 .ref-remove:hover {
     color: #e74c3c;
 }
+
+/* ═══════════════════════════════════════════════
+   TOOLTIPS — Detection Options Help Icons
+   ═══════════════════════════════════════════════ */
+
+.tooltip-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-family: var(--font-body);
+    color: var(--text-muted);
+    background: rgba(90, 99, 130, 0.2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    cursor: help;
+    margin-left: 0.35rem;
+    vertical-align: middle;
+    text-transform: none;
+    letter-spacing: 0;
+    transition: color 0.2s, background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+}
+
+.tooltip-trigger:hover {
+    color: var(--accent);
+    background: rgba(122, 162, 247, 0.15);
+    border-color: var(--accent);
+}
+
+/* Tooltip popup — pure CSS, positioned above the trigger */
+.tooltip-trigger::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 400;
+    font-family: var(--font-body);
+    line-height: 1.55;
+    text-transform: none;
+    letter-spacing: normal;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 100;
+    white-space: normal;
+    text-align: left;
+}
+
+/* Arrow pointing down toward the trigger */
+.tooltip-trigger::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--border);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 101;
+}
+
+.tooltip-trigger:hover::after,
+.tooltip-trigger:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Reposition tooltips that would overflow left edge */
+.four-col .form-group:first-child .tooltip-trigger::after {
+    left: 0;
+    transform: translateX(0);
+}
+
+.four-col .form-group:first-child .tooltip-trigger::before {
+    left: 9px;
+    transform: translateX(0);
+}
+
+/* Reposition tooltips that would overflow right edge */
+.four-col .form-group:last-child .tooltip-trigger::after {
+    left: auto;
+    right: 0;
+    transform: translateX(0);
+}
+
+.four-col .form-group:last-child .tooltip-trigger::before {
+    left: auto;
+    right: 3px;
+    transform: translateX(0);
+}
+
+/* Mobile: wider tooltips, always left-aligned */
+@media (max-width: 900px) {
+    .tooltip-trigger::after {
+        width: 240px;
+        left: 0;
+        transform: translateX(0);
+    }
+    .tooltip-trigger::before {
+        left: 9px;
+        transform: translateX(0);
+    }
+}
+
+/* ═══════════════════════════════════════════════
+   PCRE FLAGS — Checkbox row with label
+   ═══════════════════════════════════════════════ */
+
+.pcre-flags-row {
+    padding: 0.75rem 1rem;
+    background: rgba(38, 40, 57, 0.5);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-top: -0.5rem;
+    gap: 1.25rem;
+}
+
+.pcre-flags-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-right: 0.25rem;
+    flex-shrink: 0;
+}
+
+.pcre-flags-row .checkbox-label {
+    font-size: 0.9rem;
+}
+
+.pcre-flags-row .checkbox-label span:not(.tooltip-trigger) {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.pcre-flags-row .checkbox-label input:checked + span {
+    color: var(--accent);
+}
