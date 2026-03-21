@@ -60,6 +60,7 @@ const BUILDER_FIELDS = [
 const FLOW_CHECKBOXES = [
     "flow_established", "flow_to_server", "flow_to_client",
     "flow_from_server", "flow_from_client", "flow_stateless",
+    "flow_not_established",
 ];
 
 const PCRE_FLAG_CHECKBOXES = [
@@ -137,6 +138,8 @@ function getFormData() {
     if (val("flow_to_client")) flowParts.push("to_client");
     if (val("flow_from_server")) flowParts.push("from_server");
     if (val("flow_from_client")) flowParts.push("from_client");
+    if (val("flow_from_client")) flowParts.push("from_client");
+    if (val("flow_not_established")) flowParts.push("not_established");
 
     return {
         action: val("action"),
