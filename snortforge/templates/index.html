@@ -255,12 +255,36 @@
         <section class="card">
             <h2 class="card-title">Flow Options</h2>
             <div class="form-row checkbox-row flow-checkboxes">
-                <label class="checkbox-label"><input type="checkbox" id="flow_established"><span>established</span></label>
-                <label class="checkbox-label"><input type="checkbox" id="flow_to_server"><span>to_server</span></label>
-                <label class="checkbox-label"><input type="checkbox" id="flow_to_client"><span>to_client</span></label>
-                <label class="checkbox-label"><input type="checkbox" id="flow_from_server"><span>from_server</span></label>
-                <label class="checkbox-label"><input type="checkbox" id="flow_from_client"><span>from_client</span></label>
-                <label class="checkbox-label"><input type="checkbox" id="flow_stateless"><span>stateless</span></label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="flow_established">
+                    <span>established</span>
+                    <span class="tooltip-trigger" data-tooltip="Only match packets that are part of an established TCP connection (3-way handshake completed). Prevents firing on SYN/SYN-ACK probes and reduces noise. Most detection rules should use this.">?</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="flow_to_server">
+                    <span>to_server</span>
+                    <span class="tooltip-trigger" data-tooltip="Match traffic flowing from the client to the server (request direction). Equivalent to from_client. Use for detecting attacks sent TO a service.">?</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="flow_to_client">
+                    <span>to_client</span>
+                    <span class="tooltip-trigger" data-tooltip="Match traffic flowing from the server to the client (response direction). Equivalent to from_server. Use for detecting malicious responses, data exfiltration, or C2 callbacks.">?</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="flow_from_server">
+                    <span>from_server</span>
+                    <span class="tooltip-trigger" data-tooltip="Match traffic originating from the server side. Equivalent to to_client. Use when you want to emphasize the source is the server.">?</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="flow_from_client">
+                    <span>from_client</span>
+                    <span class="tooltip-trigger" data-tooltip="Match traffic originating from the client side. Equivalent to to_server. Use when you want to emphasize the source is the client.">?</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="flow_stateless">
+                    <span>stateless</span>
+                    <span class="tooltip-trigger" data-tooltip="Match packets regardless of TCP session state. Use for detecting activity outside normal connections like port scans, resets, or malformed packets. Cannot be combined with 'established'.">?</span>
+                </label>
             </div>
         </section>
 
@@ -269,7 +293,10 @@
             <h2 class="card-title">Threshold <span class="optional-tag">Optional</span></h2>
             <div class="form-row four-col">
                 <div class="form-group">
-                    <label for="threshold_type">Type</label>
+                    <label for="threshold_type">
+                        Type
+                        <span class="tooltip-trigger" data-tooltip="'limit' — alert on the first N events, then stop. 'threshold' — alert every Nth event. 'both' — alert once per time window after N events. Use 'limit' to cap alerts, 'threshold' for sampling, 'both' for rate-based detection.">?</span>
+                    </label>
                     <select id="threshold_type">
                         <option value="">— None —</option>
                         <option value="limit">limit</option>
@@ -278,18 +305,27 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="threshold_track">Track</label>
+                    <label for="threshold_track">
+                        Track
+                        <span class="tooltip-trigger" data-tooltip="'by_src' — apply threshold per source IP. 'by_dst' — apply threshold per destination IP. Controls whether the event counter resets per attacker (src) or per target (dst).">?</span>
+                    </label>
                     <select id="threshold_track">
                         <option value="by_src">by_src</option>
                         <option value="by_dst">by_dst</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="threshold_count">Count</label>
+                    <label for="threshold_count">
+                        Count
+                        <span class="tooltip-trigger" data-tooltip="Number of rule hits required before the threshold action triggers. For 'limit': alert this many times then stop. For 'threshold': alert every Nth match. For 'both': require N hits before one alert.">?</span>
+                    </label>
                     <input type="number" id="threshold_count" value="0" min="0">
                 </div>
                 <div class="form-group">
-                    <label for="threshold_seconds">Seconds</label>
+                    <label for="threshold_seconds">
+                        Seconds
+                        <span class="tooltip-trigger" data-tooltip="Time window in seconds for the threshold counter. The count resets after this period. Example: count 5, seconds 60 means 5 events within a 60-second window.">?</span>
+                    </label>
                     <input type="number" id="threshold_seconds" value="0" min="0">
                 </div>
             </div>
