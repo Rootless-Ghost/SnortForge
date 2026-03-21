@@ -51,7 +51,7 @@ const BUILDER_FIELDS = [
     "action", "protocol", "direction", "src_ip", "src_port",
     "dst_ip", "dst_port", "msg", "sid", "rev", "priority",
     "classtype", "content", "content_nocase",
-    "content_negated", "content_http_uri",
+    "content_negated", "content_http_uri", "content_http_header",
     "depth", "offset", "distance", "within",
     "pcre", "threshold_type", "threshold_track", "threshold_count",
     "threshold_seconds",
@@ -156,6 +156,7 @@ function getFormData() {
         content_nocase: val("content_nocase"),
         content_negated: val("content_negated"),
         content_http_uri: val("content_http_uri"),
+        content_http_header: val("content_http_header"),
         pcre: buildPcreString(),
         pcre_raw: val("pcre"),
         pcre_flag_i: val("pcre_flag_i"),
@@ -186,6 +187,7 @@ function buildRuleText(data) {
         let cs = `content:"${prefix}${data.content}"`;
         if (data.content_nocase) cs += "; nocase";
         if (data.content_http_uri) cs += "; http_uri";
+        if (data.content_http_header) cs += "; http_header";
         opts.push(cs);
     }
     if (data.depth > 0) opts.push(`depth:${data.depth}`);
@@ -305,6 +307,7 @@ function clearForm() {
     document.getElementById("content_nocase").checked = false;
     document.getElementById("content_negated").checked = false;
     document.getElementById("content_http_uri").checked = false;
+    document.getElementById("content_http_header").checked = false;
     document.getElementById("depth").value = "0";
     document.getElementById("offset").value = "0";
     document.getElementById("distance").value = "0";
@@ -346,6 +349,7 @@ function loadRuleIntoBuilder(ruleData) {
     setVal("content_nocase", ruleData.content_nocase);
     setVal("content_negated", ruleData.content_negated);
     setVal("content_http_uri", ruleData.content_http_uri);
+    setVal("content_http_header", ruleData.content_http_header);
     setVal("depth", ruleData.depth);
     setVal("offset", ruleData.offset);
     setVal("distance", ruleData.distance);
