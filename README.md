@@ -125,6 +125,84 @@ Browse **12 pre-built detection templates** organized by category:
 | **Malware / C2** | Netcat Reverse Shell, DNS Tunneling |
 | **Exploit** | SMB EternalBlue Probe |
 
+
+## Detection Options Reference
+
+SnortForge's Rule Builder includes several content matching modifiers that control **how** and **where** Snort inspects packet payloads. Understanding these options is essential for writing precise, performant detection rules.
+
+### Content Match Modifiers
+
+| Option | Snort Syntax | Description |
+|--------|-------------|-------------|
+| **Case Insensitive** | `nocase` | Match content regardless of uppercase/lowercase. `content:"GET"; nocase;` matches `GET`, `get`, `Get`, etc. |
+| **Negated Match** | `content:!"...";` | Alert when the specified content is **not found** in the packet. Useful for detecting the *absence* of expected data. |
+
+#### Negated Match — When to Use It
+
+Negated matching inverts the detection logic: instead of firing when content is present, the rule fires when it's missing. This is valuable in scenarios like:
+
+- **Missing HTTP headers** — Flag responses that lack a `Content-Type` header, which may indicate a misconfigured or malicious server
+- **Protocol violations** — Detect traffic on a known port that doesn't contain expected protocol banners (e.g., port 80 traffic without `HTTP/`)
+- **Data exfiltration indicators** — Alert on DNS responses missing standard response codes that may signal DNS tunneling
+
+**Example:** Alert on HTTP traffic that does not contain a standard status code:
+```
+alert tcp $HTTP_SERVERS $HTTP_PORTS -> any any (msg:"HTTP response missing status code"; flow:established,from_server; content:!"HTTP/1."; depth:7; sid:1000001; rev:1;)
+```
+
+> **Note:** Negated content matches are most effective when combined with `flow` and other positional modifiers to avoid excessive false positives.
+
+### Positional Modifiers
+
+These modifiers restrict **where** within the payload Snort searches for content, improving both accuracy and performance.
+
+| Option | Snort Syntax | Description |
+|--------|-------------|-------------|
+| **Depth** | `depth:<bytes>;` | Only search within the first N bytes from the start of the payload (or from the last content match). Limits the search window. |
+| **Offset** | `offset:<bytes>;` | Skip the first N bytes before starting the search. Useful for ignoring known headers or fields. |
+| **Distance** | `distance:<bytes>;` | After the previous content match, skip N bytes before searching for the next content. Used in chained content matches. |
+| **Within** | `within:<bytes>;` | After the previous content match, search only within the next N bytes. Pairs with `distance` for tight matching. |
+
+#### How Positional Modifiers Work Together
+
+```
+Packet payload (byte positions):
+0         10        20        30        40
+|─────────|─────────|─────────|─────────|
+GET /login.php HTTP/1.1\r\nHost: example.com
+
+content:"GET"; depth:3;
+  └─ Only checks bytes 0–2 (first 3 bytes)
+
+content:"/login"; offset:3;
+  └─ Starts searching at byte 3, skips "GET"
+
+content:"GET"; depth:3; content:".php"; distance:1; within:15;
+  └─ After matching "GET", skips 1 byte, then searches within the next 15 bytes for ".php"
+```
+
+#### Why Use Positional Modifiers?
+
+- **Performance** — Narrowing the search window means Snort examines fewer bytes per packet, reducing CPU load on high-traffic networks
+- **Precision** — Prevents false positives by ensuring content only matches in the expected location (e.g., matching `admin` in the URI path, not in the page body)
+- **Chained detection** — `distance` and `within` let you match multiple content strings in a specific order and proximity, which is critical for detecting multi-stage attack patterns
+
+### Putting It All Together — Example Rule
+
+Detect a potential SQL injection attempt in an HTTP POST body:
+
+```
+alert tcp any any -> $HTTP_SERVERS $HTTP_PORTS (msg:"Possible SQL injection in POST body"; flow:established,to_server; content:"POST"; depth:4; content:"UNION"; distance:0; nocase; content:"SELECT"; distance:0; within:20; nocase; sid:1000002; rev:1;)
+```
+
+**Breakdown:**
+- `content:"POST"; depth:4;` — Confirm it's a POST request by checking the first 4 bytes
+- `content:"UNION"; distance:0; nocase;` — Look for "UNION" anywhere after "POST," case insensitive
+- `content:"SELECT"; distance:0; within:20; nocase;` — Look for "SELECT" within 20 bytes after "UNION"
+
+This chained approach reduces false positives compared to matching `UNION SELECT` as a single string, since attackers often insert whitespace, comments, or encoding between keywords.
+
+
 ---
 
 ## Project Structure
