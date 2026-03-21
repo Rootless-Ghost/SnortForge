@@ -84,7 +84,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # 4. Launch SnortForge
-python app.py
+python3 app.py
 ```
 
 Then open your browser to **http://127.0.0.1:5000**
