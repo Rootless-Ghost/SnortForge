@@ -51,7 +51,8 @@ const BUILDER_FIELDS = [
     "action", "protocol", "direction", "src_ip", "src_port",
     "dst_ip", "dst_port", "msg", "sid", "rev", "priority",
     "classtype", "content", "content_nocase",
-    "content_negated", "depth", "offset", "distance", "within",
+    "content_negated", "content_http_uri",
+    "depth", "offset", "distance", "within",
     "pcre", "threshold_type", "threshold_track", "threshold_count",
     "threshold_seconds",
 ];
@@ -59,6 +60,10 @@ const BUILDER_FIELDS = [
 const FLOW_CHECKBOXES = [
     "flow_established", "flow_to_server", "flow_to_client",
     "flow_from_server", "flow_from_client", "flow_stateless",
+];
+
+const PCRE_FLAG_CHECKBOXES = [
+    "pcre_flag_i", "pcre_flag_s", "pcre_flag_m", "pcre_flag_x",
 ];
 
 function initBuilder() {
@@ -69,6 +74,10 @@ function initBuilder() {
         if (el) el.addEventListener("change", updatePreview);
     });
     FLOW_CHECKBOXES.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("change", updatePreview);
+    });
+    PCRE_FLAG_CHECKBOXES.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener("change", updatePreview);
     });
@@ -84,6 +93,31 @@ function initBuilder() {
     document.getElementById("ref_value").addEventListener("keydown", e => {
         if (e.key === "Enter") { e.preventDefault(); addReference(); }
     });
+}
+
+/**
+ * Build the final PCRE string from the pattern input and flag checkboxes.
+ * If the user already typed a full /pattern/flags format, return it as-is.
+ * Otherwise, wrap the pattern with slashes and append checked flags.
+ */
+function buildPcreString() {
+    const raw = document.getElementById("pcre").value.trim();
+    if (!raw) return "";
+
+    // Check if user already provided full /pattern/flags format
+    const fullFormatMatch = raw.match(/^\/(.+)\/([ismxAEGRBUPHMCOIDKSY]*)$/);
+    if (fullFormatMatch) {
+        return raw; // User typed full format, respect it
+    }
+
+    // Build flags from checkboxes
+    let flags = "";
+    if (document.getElementById("pcre_flag_i").checked) flags += "i";
+    if (document.getElementById("pcre_flag_s").checked) flags += "s";
+    if (document.getElementById("pcre_flag_m").checked) flags += "m";
+    if (document.getElementById("pcre_flag_x").checked) flags += "x";
+
+    return `/${raw}/${flags}`;
 }
 
 function getFormData() {
@@ -121,7 +155,13 @@ function getFormData() {
         content: val("content"),
         content_nocase: val("content_nocase"),
         content_negated: val("content_negated"),
-        pcre: val("pcre"),
+        content_http_uri: val("content_http_uri"),
+        pcre: buildPcreString(),
+        pcre_raw: val("pcre"),
+        pcre_flag_i: val("pcre_flag_i"),
+        pcre_flag_s: val("pcre_flag_s"),
+        pcre_flag_m: val("pcre_flag_m"),
+        pcre_flag_x: val("pcre_flag_x"),
         depth: val("depth"),
         offset: val("offset"),
         distance: val("distance"),
@@ -145,6 +185,7 @@ function buildRuleText(data) {
         const prefix = data.content_negated ? "!" : "";
         let cs = `content:"${prefix}${data.content}"`;
         if (data.content_nocase) cs += "; nocase";
+        if (data.content_http_uri) cs += "; http_uri";
         opts.push(cs);
     }
     if (data.depth > 0) opts.push(`depth:${data.depth}`);
@@ -263,11 +304,13 @@ function clearForm() {
     document.getElementById("content").value = "";
     document.getElementById("content_nocase").checked = false;
     document.getElementById("content_negated").checked = false;
+    document.getElementById("content_http_uri").checked = false;
     document.getElementById("depth").value = "0";
     document.getElementById("offset").value = "0";
     document.getElementById("distance").value = "0";
     document.getElementById("within").value = "0";
     document.getElementById("pcre").value = "";
+    PCRE_FLAG_CHECKBOXES.forEach(id => document.getElementById(id).checked = false);
     FLOW_CHECKBOXES.forEach(id => document.getElementById(id).checked = false);
     document.getElementById("threshold_type").value = "";
     document.getElementById("threshold_track").value = "by_src";
@@ -302,11 +345,39 @@ function loadRuleIntoBuilder(ruleData) {
     setVal("content", ruleData.content);
     setVal("content_nocase", ruleData.content_nocase);
     setVal("content_negated", ruleData.content_negated);
+    setVal("content_http_uri", ruleData.content_http_uri);
     setVal("depth", ruleData.depth);
     setVal("offset", ruleData.offset);
     setVal("distance", ruleData.distance);
     setVal("within", ruleData.within);
-    setVal("pcre", ruleData.pcre || "");
+
+    // Handle PCRE — load raw pattern into input, set flag checkboxes
+    if (ruleData.pcre_raw !== undefined) {
+        // New format: raw pattern + individual flags stored separately
+        setVal("pcre", ruleData.pcre_raw);
+        setVal("pcre_flag_i", ruleData.pcre_flag_i);
+        setVal("pcre_flag_s", ruleData.pcre_flag_s);
+        setVal("pcre_flag_m", ruleData.pcre_flag_m);
+        setVal("pcre_flag_x", ruleData.pcre_flag_x);
+    } else if (ruleData.pcre) {
+        // Legacy format: full /pattern/flags string — parse it apart
+        const match = ruleData.pcre.match(/^\/(.+)\/([ismxAEGRBUPHMCOIDKSY]*)$/);
+        if (match) {
+            setVal("pcre", match[1]);
+            const flags = match[2];
+            setVal("pcre_flag_i", flags.includes("i"));
+            setVal("pcre_flag_s", flags.includes("s"));
+            setVal("pcre_flag_m", flags.includes("m"));
+            setVal("pcre_flag_x", flags.includes("x"));
+        } else {
+            setVal("pcre", ruleData.pcre);
+            PCRE_FLAG_CHECKBOXES.forEach(id => document.getElementById(id).checked = false);
+        }
+    } else {
+        setVal("pcre", "");
+        PCRE_FLAG_CHECKBOXES.forEach(id => document.getElementById(id).checked = false);
+    }
+
     setVal("threshold_type", ruleData.threshold_type || "");
     setVal("threshold_track", ruleData.threshold_track || "by_src");
     setVal("threshold_count", ruleData.threshold_count || 0);
