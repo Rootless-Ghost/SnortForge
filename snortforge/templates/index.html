@@ -290,6 +290,11 @@
                     <span>stateless</span>
                     <span class="tooltip-trigger" data-tooltip="Match packets regardless of TCP session state. Use for detecting activity outside normal connections like port scans, resets, or malformed packets. Cannot be combined with 'established'.">?</span>
                 </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="flow_not_established">
+                    <span>not_established</span>
+                    <span class="tooltip-trigger" data-tooltip="Match packets that are NOT part of an established TCP connection. Fires on SYN packets, failed handshakes, and connection attempts. Useful for detecting port scans, SYN floods, and unauthorized connection attempts.">?</span>
+                </label>
             </div>
         </section>
 
