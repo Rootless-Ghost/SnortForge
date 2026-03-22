@@ -7,15 +7,15 @@
   ### Snort IDS/IPS Rule Generator & Management Tool
 
 
-<p align="center">
+
   <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Flask-3.0%2B-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
   <img src="https://img.shields.io/badge/License-MIT-9ece6a?style=for-the-badge" alt="MIT License">
   <img src="https://img.shields.io/badge/Snort-IDS%2FIPS-f7768e?style=for-the-badge&logo=snort&logoColor=white" alt="Snort">
   <img src="https://img.shields.io/badge/Status-Active-9ece6a?style=for-the-badge" alt="Status">
-</p>
 
-<p align="center">
+
+
   A web-based application for building, validating, managing, and exporting Snort intrusion detection rules with a clean, dark-themed interface.
 </p>
 
