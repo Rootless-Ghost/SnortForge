@@ -20,7 +20,6 @@
   A web-based application for building, validating, managing, and exporting Snort intrusion detection rules with a clean, dark-themed interface.
 </p>
 
----
 
 ##  Overview
 
@@ -43,7 +42,6 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 - **Dark Theme** — Clean, spacious interface built for extended use
 
 
----
 
 ##  Screenshots
 
@@ -77,7 +75,6 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 
 ![Templates](screenshots/templates.png)
 
----
 
 ##  Installation
 
@@ -111,7 +108,6 @@ python3 app.py
 
 Then open your browser to **http://127.0.0.1:5000**
 
----
 
 ##  Usage
 
@@ -236,7 +232,6 @@ alert tcp any any -> $HTTP_SERVERS $HTTP_PORTS (msg:"Possible SQL injection in P
 
 This chained approach reduces false positives compared to matching `UNION SELECT` as a single string, since attackers often insert whitespace, comments, or encoding between keywords.
 
----
 
 ## Multi-Content Chaining
 
@@ -275,7 +270,6 @@ alert tcp any any -> $HTTP_SERVERS $HTTP_PORTS (msg:"SQL Injection in POST"; flo
 alert tcp any any -> $HTTP_SERVERS $HTTP_PORTS (msg:"SQL Injection in POST"; flow:established,to_server; content:"POST"; depth 4; content:"UNION"; nocase; content:"SELECT"; nocase; within 20; sid:1000002; rev:1;)
 ```
 
----
 
 ## Snort 3 Syntax Mode
 
@@ -290,7 +284,6 @@ Toggle between Snort 2 and Snort 3 output using the switch in the **Live Preview
 | Positional modifiers | `depth:4` (colon-separated) | `depth 4` (space-separated) |
 | Rate limiting | `threshold:type limit, ...` | `detection_filter:track by_src, ...` |
 
----
 
 ## Rule Performance Scoring
 
@@ -311,7 +304,6 @@ Click **"Score Performance"** to analyze your rule against 8 detection engineeri
 
 Multi-content rules receive bonus points for chaining — up to +6 for three or more chained content matches with positional modifiers.
 
----
 
 ## Project Structure
 
@@ -338,7 +330,6 @@ SnortForge/
 └── README.md
 ```
 
----
 
 ## Technical Details
 
@@ -372,7 +363,6 @@ SnortForge/
                      └─────────┘
 ```
 
----
 
 ## Roadmap
  
@@ -387,13 +377,19 @@ SnortForge/
 - [ ] Persistent storage (database backend)
 - [ ] Community template sharing
 
----
+## Related Tools
+
+| Tool | Purpose | Link |
+|------|---------|------|
+| **YaraForge** | YARA rule generation for malware/file detection | [GitHub](https://github.com/Rootless-Ghost/YaraForge) |
+| **SnortForge** | Snort IDS/IPS rule generation for network detection | This Repo |
+| **SigmaForge** | Sigma rule generation for SIEM detection | [GitHub](https://github.com/Rootless-Ghost/SigmaForge) |
+| **SIREN** | NIST 800-61 incident response report generator | [GitHub](https://github.com/Rootless-Ghost/SIREN) |
 
 ## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
----
 
 <div align="center">
 
