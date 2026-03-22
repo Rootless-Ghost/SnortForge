@@ -52,6 +52,16 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 
 ![Rule Builder](screenshots/SnortForge_Updated.png)
 
+### Multi-Content Chaining
+*Chain multiple content matches with independent modifiers for precise detection*
+ 
+![Multi-Content](screenshots/multi_content_match.png)
+ 
+### Snort 3 Toggle
+*Switch between Snort 2 and Snort 3 syntax output with a single toggle*
+ 
+![Snort 3 Toggle](screenshots/Snort3_toggle.png)
+
 ### Performance Score
 *Score your rules against detection engineering best practices*
 
@@ -284,7 +294,7 @@ Toggle between Snort 2 and Snort 3 output using the switch in the **Live Preview
 
 ## Rule Performance Scoring
 
-Click **"📊 Score Performance"** to analyze your rule against 8 detection engineering criteria. The scorer returns a 0–100 score, letter grade (A–F), per-criteria breakdown, and actionable optimization tips.
+Click **"Score Performance"** to analyze your rule against 8 detection engineering criteria. The scorer returns a 0–100 score, letter grade (A–F), per-criteria breakdown, and actionable optimization tips.
 
 ### Scoring Criteria
 
