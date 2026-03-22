@@ -3,11 +3,11 @@
 # 🐷 SnortForge
 
 </div>
-
+<p align="center">
   ### Snort IDS/IPS Rule Generator & Management Tool
+</p>
 
-
-
+<p align="center">
   <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Flask-3.0%2B-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
   <img src="https://img.shields.io/badge/License-MIT-9ece6a?style=for-the-badge" alt="MIT License">
