@@ -20,6 +20,9 @@
   A web-based application for building, validating, managing, and exporting Snort intrusion detection rules with a clean, dark-themed interface.
 </p>
 
+<p align="center">
+  <a href="#features">Features</a> · <a href="#quick-start">Quick Start</a> · <a href="#usage">Usage</a> · <a href="#project-structure">Project Structure</a> · <a href="#related-tools">Related Tools</a>
+</p>
 
 ##  Overview
 
