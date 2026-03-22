@@ -13,6 +13,7 @@ from flask import (
 import logging
 from snortforge.core.rule import SnortRule
 from snortforge.core.validator import validate_rule
+from snortforge.core.scorer import score_rule
 from snortforge.core.templates_data import (
     get_templates_json, get_template_categories, load_template, TEMPLATES
 )
@@ -82,6 +83,38 @@ def api_validate():
         }), 500
 
 
+# ── API: Build Snort 3 Rule ──
+
+@app.route("/api/build/snort3", methods=["POST"])
+def api_build_snort3():
+    data = request.get_json()
+    try:
+        rule = SnortRule.from_dict(data)
+        return jsonify({"success": True, "rule_text": rule.build_snort3()})
+    except Exception as e:
+        logger.exception("Unexpected error during Snort 3 rule build")
+        return jsonify({
+            "success": False,
+            "error": "An internal error occurred while building the Snort 3 rule.",
+        }), 500
+
+
+# ── API: Score Rule ──
+
+@app.route("/api/score", methods=["POST"])
+def api_score():
+    data = request.get_json()
+    try:
+        rule = SnortRule.from_dict(data)
+        result = score_rule(rule)
+        return jsonify(result)
+    except Exception as e:
+        logger.exception("Unexpected error during rule scoring")
+        return jsonify({
+            "error": "An internal error occurred while scoring the rule.",
+        }), 500
+
+
 # ── API: Get Templates ──
 
 @app.route("/api/templates")
@@ -114,12 +147,14 @@ def api_template_detail(name):
 def api_export_rules():
     data = request.get_json()
     rules_data = data.get("rules", [])
+    snort3_mode = data.get("snort3", False)
     if not rules_data:
         return jsonify({"error": "No rules to export"}), 400
 
+    version_label = "Snort 3" if snort3_mode else "Snort 2"
     lines = [
         f"# {'═' * 55}",
-        f"# SnortForge — Generated Rules",
+        f"# SnortForge — Generated Rules ({version_label})",
         f"# Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         f"# Total Rules: {len(rules_data)}",
         f"# {'═' * 55}",
@@ -127,7 +162,7 @@ def api_export_rules():
     ]
     for rd in rules_data:
         rule = SnortRule.from_dict(rd)
-        lines.append(rule.build())
+        lines.append(rule.build_snort3() if snort3_mode else rule.build())
 
     content = "\n".join(lines) + "\n"
 

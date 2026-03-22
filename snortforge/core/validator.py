@@ -84,17 +84,34 @@ def validate_rule(rule: SnortRule) -> dict:
     if rule.rev < 1:
         errors.append("Revision must be >= 1.")
 
-    # Content
-    if not rule.content and not rule.pcre:
+    # Content — use get_content_matches() for multi-content awareness
+    matches = rule.get_content_matches()
+    if not matches and not rule.pcre:
         warnings.append("No content or PCRE — rule matches on header only.")
-    if rule.content and "|" in rule.content:
-        hex_parts = re.findall(r'\|([^|]*)\|', rule.content)
-        for part in hex_parts:
-            cleaned = part.replace(" ", "")
-            if len(cleaned) % 2 != 0:
-                errors.append(f"Invalid hex: '|{part}|' — must have even number of hex chars.")
-            if not re.match(r'^[0-9a-fA-F\s]+$', part):
-                errors.append(f"Invalid hex: '|{part}|' — contains non-hex characters.")
+
+    for i, cm in enumerate(matches):
+        label = f"Content #{i+1}" if len(matches) > 1 else "Content"
+        if cm.content and "|" in cm.content:
+            hex_parts = re.findall(r'\|([^|]*)\|', cm.content)
+            for part in hex_parts:
+                cleaned = part.replace(" ", "")
+                if len(cleaned) % 2 != 0:
+                    errors.append(f"{label}: Invalid hex '|{part}|' — must have even number of hex chars.")
+                if not re.match(r'^[0-9a-fA-F\s]+$', part):
+                    errors.append(f"{label}: Invalid hex '|{part}|' — contains non-hex characters.")
+        # Depth/Offset per content match
+        if cm.depth > 0 and not cm.content:
+            errors.append(f"{label}: Depth requires content.")
+        if cm.offset > 0 and not cm.content:
+            errors.append(f"{label}: Offset requires content.")
+        if cm.depth > 0 and cm.offset >= cm.depth:
+            warnings.append(f"{label}: Offset >= depth — content may never match.")
+        # Chained match checks (2nd+ content)
+        if i > 0 and cm.distance == 0 and cm.within == 0 and cm.depth == 0 and cm.offset == 0:
+            warnings.append(
+                f"{label}: No positional modifier — consider distance/within "
+                f"to constrain match relative to Content #{i}."
+            )
 
     # Flow
     if rule.flow:
@@ -144,14 +161,6 @@ def validate_rule(rule: SnortRule) -> dict:
             errors.append("Threshold count must be > 0.")
         if rule.threshold_seconds <= 0:
             errors.append("Threshold seconds must be > 0.")
-
-    # Depth/Offset
-    if rule.depth > 0 and not rule.content:
-        errors.append("Depth requires content.")
-    if rule.offset > 0 and not rule.content:
-        errors.append("Offset requires content.")
-    if rule.depth > 0 and rule.offset >= rule.depth:
-        warnings.append("Offset >= depth — content may never match.")
 
     return {
         "is_valid": len(errors) == 0,

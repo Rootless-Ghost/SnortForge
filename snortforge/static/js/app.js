@@ -6,6 +6,7 @@
 const state = {
     rules: [],
     selectedRows: new Set(),
+    snort3Mode: false,
 };
 
 // ── DOM Ready ──
@@ -50,10 +51,8 @@ function switchTab(tabName) {
 const BUILDER_FIELDS = [
     "action", "protocol", "direction", "src_ip", "src_port",
     "dst_ip", "dst_port", "msg", "sid", "rev", "priority",
-    "classtype", "content", "content_nocase",
-    "content_negated", "content_http_uri", "content_http_header",
-    "depth", "offset", "distance", "within",
-    "pcre", "threshold_type", "threshold_track", "threshold_count",
+    "classtype",
+    "threshold_type", "threshold_track", "threshold_count",
     "threshold_seconds",
 ];
 
@@ -68,7 +67,7 @@ const PCRE_FLAG_CHECKBOXES = [
 ];
 
 function initBuilder() {
-    // Live preview on every input change
+    // Live preview on every input change (non-content fields)
     BUILDER_FIELDS.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener("input", updatePreview);
@@ -83,11 +82,40 @@ function initBuilder() {
         if (el) el.addEventListener("change", updatePreview);
     });
 
+    // PCRE input
+    const pcreEl = document.getElementById("pcre");
+    if (pcreEl) {
+        pcreEl.addEventListener("input", updatePreview);
+        pcreEl.addEventListener("change", updatePreview);
+    }
+
+    // Bind events on the default content block
+    bindContentBlockEvents(document.querySelector('.content-block[data-index="0"]'));
+
+    // Add Content Match button
+    document.getElementById("btnAddContent").addEventListener("click", addContentBlock);
+
     // Button actions
     document.getElementById("btnValidate").addEventListener("click", validateRule);
     document.getElementById("btnAddToManager").addEventListener("click", addToManager);
     document.getElementById("btnCopyRule").addEventListener("click", copyRule);
     document.getElementById("btnClearForm").addEventListener("click", clearForm);
+
+    // Snort 3 toggle
+    const snort3Toggle = document.getElementById("snort3Toggle");
+    if (snort3Toggle) {
+        snort3Toggle.addEventListener("change", e => {
+            state.snort3Mode = e.target.checked;
+            document.getElementById("snort3Label").textContent = state.snort3Mode ? "Snort 3" : "Snort 2";
+            updatePreview();
+        });
+    }
+
+    // Performance score button
+    const btnScore = document.getElementById("btnScoreRule");
+    if (btnScore) {
+        btnScore.addEventListener("click", scoreRule);
+    }
 
     // Reference add/remove
     document.getElementById("btnAddRef").addEventListener("click", addReference);
@@ -119,6 +147,218 @@ function buildPcreString() {
     if (document.getElementById("pcre_flag_x").checked) flags += "x";
 
     return `/${raw}/${flags}`;
+}
+
+/* ═══════════════════════════════════════════════
+   MULTI-CONTENT BLOCKS
+   ═══════════════════════════════════════════════ */
+
+function bindContentBlockEvents(block) {
+    block.querySelectorAll("input").forEach(el => {
+        el.addEventListener("input", updatePreview);
+        el.addEventListener("change", updatePreview);
+    });
+}
+
+function getContentBlockCount() {
+    return document.querySelectorAll("#contentMatchesContainer .content-block").length;
+}
+
+function renumberContentBlocks() {
+    document.querySelectorAll("#contentMatchesContainer .content-block").forEach((block, i) => {
+        block.dataset.index = i;
+        block.querySelector(".content-block-label").textContent = `Content Match #${i + 1}`;
+        // Only show remove button on blocks after the first
+        const removeBtn = block.querySelector(".content-block-remove");
+        if (removeBtn) removeBtn.style.display = i === 0 ? "none" : "";
+    });
+}
+
+function addContentBlock() {
+    const container = document.getElementById("contentMatchesContainer");
+    const idx = getContentBlockCount();
+    const block = document.createElement("div");
+    block.className = "content-block";
+    block.dataset.index = idx;
+    block.innerHTML = `
+        <div class="content-block-header">
+            <span class="content-block-label">Content Match #${idx + 1}</span>
+            <button type="button" class="btn btn-danger btn-xs content-block-remove" onclick="removeContentBlock(this)">✕ Remove</button>
+        </div>
+        <div class="form-group full-width">
+            <input type="text" data-field="content" placeholder="Chained content match (matched after previous content)">
+        </div>
+        <div class="form-row checkbox-row">
+            <label class="checkbox-label">
+                <input type="checkbox" data-field="nocase">
+                <span>nocase</span>
+            </label>
+            <label class="checkbox-label">
+                <input type="checkbox" data-field="negated">
+                <span>Negated (!)</span>
+            </label>
+            <label class="checkbox-label">
+                <input type="checkbox" data-field="http_uri">
+                <span>HTTP URI</span>
+            </label>
+            <label class="checkbox-label">
+                <input type="checkbox" data-field="http_header">
+                <span>HTTP Header</span>
+            </label>
+        </div>
+        <div class="form-row four-col">
+            <div class="form-group">
+                <label>Depth</label>
+                <input type="number" data-field="depth" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>Offset</label>
+                <input type="number" data-field="offset" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>Distance</label>
+                <input type="number" data-field="distance" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>Within</label>
+                <input type="number" data-field="within" value="0" min="0">
+            </div>
+        </div>
+    `;
+    container.appendChild(block);
+    bindContentBlockEvents(block);
+    renumberContentBlocks();
+    updatePreview();
+    block.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    toast(`Content Match #${idx + 1} added`, "info");
+}
+
+function removeContentBlock(btn) {
+    const block = btn.closest(".content-block");
+    block.remove();
+    renumberContentBlocks();
+    updatePreview();
+    toast("Content match removed", "info");
+}
+
+function getContentMatchesFromUI() {
+    const matches = [];
+    document.querySelectorAll("#contentMatchesContainer .content-block").forEach(block => {
+        const val = (field) => {
+            const el = block.querySelector(`[data-field="${field}"]`);
+            if (!el) return el;
+            if (el.type === "checkbox") return el.checked;
+            if (el.type === "number") return parseInt(el.value) || 0;
+            return el.value.trim();
+        };
+        const content = val("content");
+        if (content) {
+            matches.push({
+                content: content,
+                nocase: val("nocase"),
+                negated: val("negated"),
+                http_uri: val("http_uri"),
+                http_header: val("http_header"),
+                depth: val("depth"),
+                offset: val("offset"),
+                distance: val("distance"),
+                within: val("within"),
+            });
+        }
+    });
+    return matches;
+}
+
+function clearContentBlocks() {
+    const container = document.getElementById("contentMatchesContainer");
+    // Remove all blocks except the first
+    const blocks = container.querySelectorAll(".content-block");
+    blocks.forEach((block, i) => {
+        if (i > 0) block.remove();
+    });
+    // Clear the first block
+    const first = container.querySelector(".content-block");
+    if (first) {
+        first.querySelectorAll("input[type='text']").forEach(el => el.value = "");
+        first.querySelectorAll("input[type='number']").forEach(el => el.value = "0");
+        first.querySelectorAll("input[type='checkbox']").forEach(el => el.checked = false);
+    }
+    renumberContentBlocks();
+}
+
+function loadContentBlocksFromData(contents) {
+    const container = document.getElementById("contentMatchesContainer");
+    // Clear existing
+    container.innerHTML = "";
+
+    if (!contents || contents.length === 0) {
+        // Add one empty default block
+        addDefaultContentBlock(container);
+        renumberContentBlocks();
+        return;
+    }
+
+    contents.forEach((cm, i) => {
+        const block = document.createElement("div");
+        block.className = "content-block";
+        block.dataset.index = i;
+        const removeDisplay = i === 0 ? 'style="display:none"' : '';
+        block.innerHTML = `
+            <div class="content-block-header">
+                <span class="content-block-label">Content Match #${i + 1}</span>
+                <button type="button" class="btn btn-danger btn-xs content-block-remove" onclick="removeContentBlock(this)" ${removeDisplay}>✕ Remove</button>
+            </div>
+            <div class="form-group full-width">
+                <input type="text" data-field="content" value="${escapeAttr(cm.content || "")}">
+            </div>
+            <div class="form-row checkbox-row">
+                <label class="checkbox-label"><input type="checkbox" data-field="nocase" ${cm.nocase ? "checked" : ""}><span>nocase</span></label>
+                <label class="checkbox-label"><input type="checkbox" data-field="negated" ${cm.negated ? "checked" : ""}><span>Negated (!)</span></label>
+                <label class="checkbox-label"><input type="checkbox" data-field="http_uri" ${cm.http_uri ? "checked" : ""}><span>HTTP URI</span></label>
+                <label class="checkbox-label"><input type="checkbox" data-field="http_header" ${cm.http_header ? "checked" : ""}><span>HTTP Header</span></label>
+            </div>
+            <div class="form-row four-col">
+                <div class="form-group"><label>Depth</label><input type="number" data-field="depth" value="${cm.depth || 0}" min="0"></div>
+                <div class="form-group"><label>Offset</label><input type="number" data-field="offset" value="${cm.offset || 0}" min="0"></div>
+                <div class="form-group"><label>Distance</label><input type="number" data-field="distance" value="${cm.distance || 0}" min="0"></div>
+                <div class="form-group"><label>Within</label><input type="number" data-field="within" value="${cm.within || 0}" min="0"></div>
+            </div>
+        `;
+        container.appendChild(block);
+        bindContentBlockEvents(block);
+    });
+}
+
+function addDefaultContentBlock(container) {
+    const block = document.createElement("div");
+    block.className = "content-block";
+    block.dataset.index = "0";
+    block.innerHTML = `
+        <div class="content-block-header">
+            <span class="content-block-label">Content Match #1</span>
+        </div>
+        <div class="form-group full-width">
+            <input type="text" data-field="content" placeholder="String or hex content to match (e.g., |FF|SMB or SELECT * FROM)">
+        </div>
+        <div class="form-row checkbox-row">
+            <label class="checkbox-label"><input type="checkbox" data-field="nocase"><span>Case insensitive (nocase)</span><span class="tooltip-trigger" data-tooltip="Match content regardless of uppercase or lowercase.">?</span></label>
+            <label class="checkbox-label"><input type="checkbox" data-field="negated"><span>Negated match (!)</span><span class="tooltip-trigger" data-tooltip="Alert when this content is NOT found.">?</span></label>
+            <label class="checkbox-label"><input type="checkbox" data-field="http_uri"><span>HTTP URI</span><span class="tooltip-trigger" data-tooltip="Only match within the HTTP request URI.">?</span></label>
+            <label class="checkbox-label"><input type="checkbox" data-field="http_header"><span>HTTP Header</span><span class="tooltip-trigger" data-tooltip="Only match within HTTP headers.">?</span></label>
+        </div>
+        <div class="form-row four-col">
+            <div class="form-group"><label>Depth</label><input type="number" data-field="depth" value="0" min="0"></div>
+            <div class="form-group"><label>Offset</label><input type="number" data-field="offset" value="0" min="0"></div>
+            <div class="form-group"><label>Distance</label><input type="number" data-field="distance" value="0" min="0"></div>
+            <div class="form-group"><label>Within</label><input type="number" data-field="within" value="0" min="0"></div>
+        </div>
+    `;
+    container.appendChild(block);
+    bindContentBlockEvents(block);
+}
+
+function escapeAttr(str) {
+    return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function getFormData() {
@@ -155,21 +395,24 @@ function getFormData() {
         classtype: val("classtype"),
         priority: val("priority"),
         references: getReferences(),
-        content: val("content"),
-        content_nocase: val("content_nocase"),
-        content_negated: val("content_negated"),
-        content_http_uri: val("content_http_uri"),
-        content_http_header: val("content_http_header"),
+        // Legacy single-content fields (empty — multi-content takes over)
+        content: "",
+        content_nocase: false,
+        content_negated: false,
+        content_http_uri: false,
+        content_http_header: false,
+        depth: 0,
+        offset: 0,
+        distance: 0,
+        within: 0,
+        // Multi-content
+        contents: getContentMatchesFromUI(),
         pcre: buildPcreString(),
         pcre_raw: val("pcre"),
         pcre_flag_i: val("pcre_flag_i"),
         pcre_flag_s: val("pcre_flag_s"),
         pcre_flag_m: val("pcre_flag_m"),
         pcre_flag_x: val("pcre_flag_x"),
-        depth: val("depth"),
-        offset: val("offset"),
-        distance: val("distance"),
-        within: val("within"),
         flow: flowParts.join(","),
         threshold_type: val("threshold_type"),
         threshold_track: val("threshold_track"),
@@ -180,23 +423,40 @@ function getFormData() {
 }
 
 function buildRuleText(data) {
+    return state.snort3Mode ? buildRuleTextSnort3(data) : buildRuleTextSnort2(data);
+}
+
+function buildRuleTextSnort2(data) {
     const header = `${data.action} ${data.protocol} ${data.src_ip} ${data.src_port} ${data.direction} ${data.dst_ip} ${data.dst_port}`;
 
     const opts = [];
     if (data.msg) opts.push(`msg:"${data.msg}"`);
     if (data.flow) opts.push(`flow:${data.flow}`);
-    if (data.content) {
-        const prefix = data.content_negated ? "!" : "";
-        let cs = `content:"${prefix}${data.content}"`;
-        if (data.content_nocase) cs += "; nocase";
-        if (data.content_http_uri) cs += "; http_uri";
-        if (data.content_http_header) cs += "; http_header";
+
+    // Multi-content matches
+    const matches = (data.contents && data.contents.length > 0) ? data.contents :
+        (data.content ? [{
+            content: data.content, nocase: data.content_nocase,
+            negated: data.content_negated, http_uri: data.content_http_uri,
+            http_header: data.content_http_header,
+            depth: data.depth, offset: data.offset,
+            distance: data.distance, within: data.within,
+        }] : []);
+
+    matches.forEach(cm => {
+        if (!cm.content) return;
+        const prefix = cm.negated ? "!" : "";
+        let cs = `content:"${prefix}${cm.content}"`;
+        if (cm.nocase) cs += "; nocase";
+        if (cm.http_uri) cs += "; http_uri";
+        if (cm.http_header) cs += "; http_header";
         opts.push(cs);
-    }
-    if (data.depth > 0) opts.push(`depth:${data.depth}`);
-    if (data.offset > 0) opts.push(`offset:${data.offset}`);
-    if (data.distance > 0) opts.push(`distance:${data.distance}`);
-    if (data.within > 0) opts.push(`within:${data.within}`);
+        if (cm.depth > 0) opts.push(`depth:${cm.depth}`);
+        if (cm.offset > 0) opts.push(`offset:${cm.offset}`);
+        if (cm.distance > 0) opts.push(`distance:${cm.distance}`);
+        if (cm.within > 0) opts.push(`within:${cm.within}`);
+    });
+
     if (data.pcre) opts.push(`pcre:"${data.pcre}"`);
     if (data.classtype) opts.push(`classtype:${data.classtype}`);
     if (data.priority > 0) opts.push(`priority:${data.priority}`);
@@ -208,6 +468,55 @@ function buildRuleText(data) {
     if (data.metadata) opts.push(`metadata:${data.metadata}`);
     if (data.threshold_type && data.threshold_count > 0 && data.threshold_seconds > 0) {
         opts.push(`threshold:type ${data.threshold_type}, track ${data.threshold_track}, count ${data.threshold_count}, seconds ${data.threshold_seconds}`);
+    }
+    opts.push(`sid:${data.sid}`);
+    opts.push(`rev:${data.rev}`);
+
+    return `${header} (${opts.join("; ")};)`;
+}
+
+function buildRuleTextSnort3(data) {
+    const header = `${data.action} ${data.protocol} ${data.src_ip} ${data.src_port} ${data.direction} ${data.dst_ip} ${data.dst_port}`;
+
+    const opts = [];
+    if (data.msg) opts.push(`msg:"${data.msg}"`);
+    if (data.flow) opts.push(`flow:${data.flow}`);
+
+    // Multi-content matches — Snort 3 sticky buffers
+    const matches = (data.contents && data.contents.length > 0) ? data.contents :
+        (data.content ? [{
+            content: data.content, nocase: data.content_nocase,
+            negated: data.content_negated, http_uri: data.content_http_uri,
+            http_header: data.content_http_header,
+            depth: data.depth, offset: data.offset,
+            distance: data.distance, within: data.within,
+        }] : []);
+
+    matches.forEach(cm => {
+        if (!cm.content) return;
+        const prefix = cm.negated ? "!" : "";
+        if (cm.http_uri) opts.push("http.uri");
+        else if (cm.http_header) opts.push("http.header");
+        let cs = `content:"${prefix}${cm.content}"`;
+        if (cm.nocase) cs += "; nocase";
+        opts.push(cs);
+        if (cm.depth > 0) opts.push(`depth ${cm.depth}`);
+        if (cm.offset > 0) opts.push(`offset ${cm.offset}`);
+        if (cm.distance > 0) opts.push(`distance ${cm.distance}`);
+        if (cm.within > 0) opts.push(`within ${cm.within}`);
+    });
+
+    if (data.pcre) opts.push(`pcre:"${data.pcre}"`);
+    if (data.classtype) opts.push(`classtype:${data.classtype}`);
+    if (data.priority > 0) opts.push(`priority:${data.priority}`);
+    if (data.references && data.references.length > 0) {
+        data.references.forEach(ref => {
+            if (ref) opts.push(`reference:${ref}`);
+        });
+    }
+    if (data.metadata) opts.push(`metadata:${data.metadata}`);
+    if (data.threshold_type && data.threshold_count > 0 && data.threshold_seconds > 0) {
+        opts.push(`detection_filter:track ${data.threshold_track}, count ${data.threshold_count}, seconds ${data.threshold_seconds}`);
     }
     opts.push(`sid:${data.sid}`);
     opts.push(`rev:${data.rev}`);
@@ -263,6 +572,76 @@ function showValidation(result) {
     card.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
+async function scoreRule() {
+    const data = getFormData();
+    try {
+        const resp = await fetch("/api/score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        const result = await resp.json();
+        showScore(result);
+    } catch (err) {
+        toast("Score request failed", "error");
+    }
+}
+
+function showScore(result) {
+    const card = document.getElementById("scoreCard");
+    const output = document.getElementById("scoreOutput");
+    card.style.display = "block";
+
+    // Grade color
+    const gradeColors = { A: "#22c55e", B: "#84cc16", C: "#eab308", D: "#f97316", F: "#ef4444" };
+    const gradeColor = gradeColors[result.grade] || "#888";
+
+    let html = "";
+
+    // Score header with gauge
+    html += `<div class="score-header">`;
+    html += `<div class="score-gauge">`;
+    html += `<svg viewBox="0 0 120 120" width="100" height="100">`;
+    const pct = result.score / 100;
+    const dashLen = 283 * pct;
+    const dashGap = 283 - dashLen;
+    html += `<circle cx="60" cy="60" r="45" fill="none" stroke="var(--surface-2, #2a2a2e)" stroke-width="10"/>`;
+    html += `<circle cx="60" cy="60" r="45" fill="none" stroke="${gradeColor}" stroke-width="10" stroke-dasharray="${dashLen} ${dashGap}" stroke-linecap="round" transform="rotate(-90 60 60)" style="transition:stroke-dasharray 0.6s ease"/>`;
+    html += `<text x="60" y="55" text-anchor="middle" fill="${gradeColor}" font-size="28" font-weight="700" font-family="var(--font-mono, monospace)">${result.score}</text>`;
+    html += `<text x="60" y="75" text-anchor="middle" fill="var(--text-muted, #888)" font-size="13" font-family="var(--font-body, sans-serif)">/ 100</text>`;
+    html += `</svg>`;
+    html += `</div>`;
+    html += `<div class="score-grade" style="color:${gradeColor}">Grade: ${result.grade}</div>`;
+    html += `</div>`;
+
+    // Breakdown bars
+    html += `<div class="score-breakdown">`;
+    result.breakdown.forEach(b => {
+        const barPct = b.max > 0 ? (b.score / b.max) * 100 : 0;
+        const barColor = barPct >= 80 ? "#22c55e" : barPct >= 50 ? "#eab308" : "#ef4444";
+        html += `<div class="score-row">`;
+        html += `<span class="score-label">${escapeHtml(b.label)}</span>`;
+        html += `<div class="score-bar-track"><div class="score-bar-fill" style="width:${barPct}%;background:${barColor}"></div></div>`;
+        html += `<span class="score-pts">${b.score}/${b.max}</span>`;
+        html += `</div>`;
+        html += `<div class="score-detail">${escapeHtml(b.details)}</div>`;
+    });
+    html += `</div>`;
+
+    // Tips
+    if (result.tips && result.tips.length > 0) {
+        html += `<div class="score-tips">`;
+        html += `<h4>Optimization Tips</h4>`;
+        result.tips.forEach(t => {
+            html += `<div class="score-tip">💡 ${escapeHtml(t)}</div>`;
+        });
+        html += `</div>`;
+    }
+
+    output.innerHTML = html;
+    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
 function addToManager() {
     const data = getFormData();
     if (!data.msg) {
@@ -306,15 +685,7 @@ function clearForm() {
     document.getElementById("priority").value = "0";
     document.getElementById("classtype").value = "";
     clearReferences();
-    document.getElementById("content").value = "";
-    document.getElementById("content_nocase").checked = false;
-    document.getElementById("content_negated").checked = false;
-    document.getElementById("content_http_uri").checked = false;
-    document.getElementById("content_http_header").checked = false;
-    document.getElementById("depth").value = "0";
-    document.getElementById("offset").value = "0";
-    document.getElementById("distance").value = "0";
-    document.getElementById("within").value = "0";
+    clearContentBlocks();
     document.getElementById("pcre").value = "";
     PCRE_FLAG_CHECKBOXES.forEach(id => document.getElementById(id).checked = false);
     FLOW_CHECKBOXES.forEach(id => document.getElementById(id).checked = false);
@@ -323,6 +694,7 @@ function clearForm() {
     document.getElementById("threshold_count").value = "0";
     document.getElementById("threshold_seconds").value = "0";
     document.getElementById("validationCard").style.display = "none";
+    document.getElementById("scoreCard").style.display = "none";
     updatePreview();
     toast("Form cleared", "info");
 }
@@ -348,26 +720,35 @@ function loadRuleIntoBuilder(ruleData) {
     setVal("priority", ruleData.priority);
     setVal("classtype", ruleData.classtype);
     loadReferences(ruleData.references || ruleData.reference || []);
-    setVal("content", ruleData.content);
-    setVal("content_nocase", ruleData.content_nocase);
-    setVal("content_negated", ruleData.content_negated);
-    setVal("content_http_uri", ruleData.content_http_uri);
-    setVal("content_http_header", ruleData.content_http_header);
-    setVal("depth", ruleData.depth);
-    setVal("offset", ruleData.offset);
-    setVal("distance", ruleData.distance);
-    setVal("within", ruleData.within);
+
+    // Load content matches — multi-content or legacy single
+    if (ruleData.contents && ruleData.contents.length > 0) {
+        loadContentBlocksFromData(ruleData.contents);
+    } else if (ruleData.content) {
+        // Legacy single-content: convert to multi-content format
+        loadContentBlocksFromData([{
+            content: ruleData.content,
+            nocase: ruleData.content_nocase || false,
+            negated: ruleData.content_negated || false,
+            http_uri: ruleData.content_http_uri || false,
+            http_header: ruleData.content_http_header || false,
+            depth: ruleData.depth || 0,
+            offset: ruleData.offset || 0,
+            distance: ruleData.distance || 0,
+            within: ruleData.within || 0,
+        }]);
+    } else {
+        clearContentBlocks();
+    }
 
     // Handle PCRE — load raw pattern into input, set flag checkboxes
     if (ruleData.pcre_raw !== undefined) {
-        // New format: raw pattern + individual flags stored separately
         setVal("pcre", ruleData.pcre_raw);
         setVal("pcre_flag_i", ruleData.pcre_flag_i);
         setVal("pcre_flag_s", ruleData.pcre_flag_s);
         setVal("pcre_flag_m", ruleData.pcre_flag_m);
         setVal("pcre_flag_x", ruleData.pcre_flag_x);
     } else if (ruleData.pcre) {
-        // Legacy format: full /pattern/flags string — parse it apart
         const match = ruleData.pcre.match(/^\/(.+)\/([ismxAEGRBUPHMCOIDKSY]*)$/);
         if (match) {
             setVal("pcre", match[1]);
@@ -400,6 +781,7 @@ function loadRuleIntoBuilder(ruleData) {
     setVal("flow_stateless", flowParts.includes("stateless"));
 
     document.getElementById("validationCard").style.display = "none";
+    document.getElementById("scoreCard").style.display = "none";
     updatePreview();
     switchTab("builder");
 }
@@ -546,11 +928,12 @@ async function exportRules() {
         const resp = await fetch("/api/export/rules", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ rules: state.rules }),
+            body: JSON.stringify({ rules: state.rules, snort3: state.snort3Mode }),
         });
         const blob = await resp.blob();
-        downloadBlob(blob, "snortforge_rules.rules");
-        toast(`Exported ${state.rules.length} rule(s)`, "success");
+        const label = state.snort3Mode ? "snort3" : "snort2";
+        downloadBlob(blob, `snortforge_${label}_rules.rules`);
+        toast(`Exported ${state.rules.length} rule(s) (${state.snort3Mode ? "Snort 3" : "Snort 2"})`, "success");
     } catch (err) {
         toast("Export failed", "error");
     }
