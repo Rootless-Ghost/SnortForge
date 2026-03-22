@@ -52,6 +52,11 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 
 ![Rule Builder](screenshots/SnortForge_Updated.png)
 
+### Performance Score
+*Score your rules against detection engineering best practices*
+
+![Performance Score](screenshots/performance_score.png)
+
 ### Rule Manager
 *Manage, import, export, and validate your entire ruleset*
 
