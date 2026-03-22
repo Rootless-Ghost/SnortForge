@@ -4,7 +4,6 @@
 
 </div>
 <p align="center">
-  
   ### Snort IDS/IPS Rule Generator & Management Tool
 </p>
 
