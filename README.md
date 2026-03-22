@@ -4,7 +4,7 @@
 
 </div>
 <p align="center">
-  <strong>**Snort IDS/IPS Rule Generator & Management Tool**</strong>
+  </h3>**Snort IDS/IPS Rule Generator & Management Tool**</h3>
 </p>
 
 <p align="center">
