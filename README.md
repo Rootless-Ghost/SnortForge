@@ -2,10 +2,9 @@
   
 # 🐷 SnortForge
 
+### Snort IDS/IPS Rule Generator & Management Tool
+
 </div>
-<p align="center">
-  </h3>Snort IDS/IPS Rule Generator & Management Tool</h3>
-</p>
 
 <p align="center">
 <img src="https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white" alt="Python">
