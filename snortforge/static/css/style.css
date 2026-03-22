@@ -1191,6 +1191,11 @@ tbody td:first-child {
 
 .content-block .checkbox-row {
     gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.content-block .four-col {
+    margin-top: 0.5rem;
 }
 
 .content-block input[type="text"] {
