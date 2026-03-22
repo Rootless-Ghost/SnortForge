@@ -29,15 +29,19 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 ### Key Capabilities
 
 - **Visual Rule Builder** — Form-based rule creation with real-time live preview
+- **Multi-Content Chaining** — Chain multiple content matches with independent modifiers (depth, offset, distance, within) for precise, multi-stage detection
+- **Snort 2 / Snort 3 Toggle** — Switch between Snort 2 and Snort 3 syntax output with a single toggle — sticky buffers, `detection_filter`, and space-separated modifiers handled automatically
+- **Rule Performance Scoring** — 8-criteria analysis engine scores rules 0–100 with letter grades and actionable optimization tips for detection engineering best practices
 - **Inline Help Tooltips** — Hover `?` icons explain detection options, flow settings, and threshold behavior
 - **Syntax Validation** — Server-side validation catches errors and suggests best practices before deployment
 - **12 Detection Templates** — Pre-built rules for SQL injection, XSS, brute force, port scans, reverse shells, and more
 - **Rule Manager** — Bulk operations: edit, duplicate, delete, import, export
-- **Import/Export** — Read `.rules` files and export for direct Snort deployment
+- **Import/Export** — Read `.rules` files and export for direct Snort 2 or Snort 3 deployment
 - **PCRE Flag Checkboxes** — Set regex flags visually instead of typing `/pattern/flags` manually
-- **HTTP URI Matching** — Restrict content matches to the request URI for web attack detection
+- **HTTP URI / Header Matching** — Restrict content matches to the request URI or HTTP headers for web attack detection
 - **Multiple References** — Add CVE, Bugtraq, URL, and other reference types with structured input and validation
 - **Dark Theme** — Clean, spacious interface built for extended use
+
 
 ---
 
@@ -217,6 +221,80 @@ alert tcp any any -> $HTTP_SERVERS $HTTP_PORTS (msg:"Possible SQL injection in P
 
 This chained approach reduces false positives compared to matching `UNION SELECT` as a single string, since attackers often insert whitespace, comments, or encoding between keywords.
 
+---
+
+## Multi-Content Chaining
+
+SnortForge v1.2.0 supports chaining multiple content matches within a single rule — the way most real-world detection rules are written. Click **"+ Add Content Match"** to add additional content blocks, each with independent modifiers.
+
+### How It Works
+
+Each content block gets its own set of controls:
+
+| Control | Description |
+|---------|-------------|
+| **Content** | The string or hex pattern to match |
+| **nocase** | Case-insensitive matching for this content |
+| **Negated (!)** | Alert when this content is NOT found |
+| **HTTP URI / Header** | Restrict match to URI or headers |
+| **Depth / Offset** | Absolute position within the payload |
+| **Distance / Within** | Relative position to the previous content match |
+
+The first content block (blue accent) is the primary fast-pattern match. Subsequent blocks (purple accent) are chained matches that Snort evaluates in sequence after the first match hits.
+
+### Example: SQL Injection in POST Body
+
+| Block | Content | Modifiers |
+|-------|---------|-----------|
+| Content #1 | `POST` | depth:4 |
+| Content #2 | `UNION` | nocase, distance:0 |
+| Content #3 | `SELECT` | nocase, distance:0, within:20 |
+
+**Snort 2 output:**
+```
+alert tcp any any -> $HTTP_SERVERS $HTTP_PORTS (msg:"SQL Injection in POST"; flow:established,to_server; content:"POST"; depth:4; content:"UNION"; nocase; content:"SELECT"; nocase; within:20; sid:1000002; rev:1;)
+```
+
+**Snort 3 output:**
+```
+alert tcp any any -> $HTTP_SERVERS $HTTP_PORTS (msg:"SQL Injection in POST"; flow:established,to_server; content:"POST"; depth 4; content:"UNION"; nocase; content:"SELECT"; nocase; within 20; sid:1000002; rev:1;)
+```
+
+---
+
+## Snort 3 Syntax Mode
+
+Toggle between Snort 2 and Snort 3 output using the switch in the **Live Preview** header. The toggle affects the live preview, clipboard copy, and `.rules` file export.
+
+### Key Syntax Differences
+
+| Feature | Snort 2 | Snort 3 |
+|---------|---------|---------|
+| HTTP URI buffer | `http_uri` (modifier after content) | `http.uri` (sticky buffer before content) |
+| HTTP Header buffer | `http_header` (modifier after content) | `http.header` (sticky buffer before content) |
+| Positional modifiers | `depth:4` (colon-separated) | `depth 4` (space-separated) |
+| Rate limiting | `threshold:type limit, ...` | `detection_filter:track by_src, ...` |
+
+---
+
+## Rule Performance Scoring
+
+Click **"📊 Score Performance"** to analyze your rule against 8 detection engineering criteria. The scorer returns a 0–100 score, letter grade (A–F), per-criteria breakdown, and actionable optimization tips.
+
+### Scoring Criteria
+
+| Criteria | Weight | What It Measures |
+|----------|--------|-----------------|
+| **Content Match** | 25 pts | Presence, length, chaining, and HTTP scoping |
+| **Positional Modifiers** | 15 pts | Use of depth, offset, distance, within |
+| **Flow State** | 15 pts | Established/stateless, direction keywords |
+| **Network Scope** | 15 pts | IP/port narrowing, variable usage |
+| **PCRE Efficiency** | 10 pts | Anchored vs standalone, greedy patterns |
+| **Threshold Config** | 5 pts | Rate-limiting configuration |
+| **Metadata Quality** | 10 pts | Message length, classtype, references, SID range |
+| **General Hygiene** | 5 pts | Direction, revision |
+
+Multi-content rules receive bonus points for chaining — up to +6 for three or more chained content matches with positional modifiers.
 
 ---
 
@@ -228,8 +306,9 @@ SnortForge/
 ├── snortforge/
 │   ├── __init__.py
 │   ├── core/
-│   │   ├── rule.py                 # Snort rule data model & builder
+│   │   ├── rule.py                 # Snort rule data model & builder (Snort 2 + 3)
 │   │   ├── validator.py            # Rule validation engine
+│   │   ├── scorer.py               # Rule performance scoring engine
 │   │   ├── templates_data.py       # 12 pre-built detection templates
 │   │   └── parser.py               # .rules file parser & importer
 │   ├── static/
@@ -266,12 +345,16 @@ SnortForge/
 │  (HTML/JS)   │◀────│  (Python)    │◀────│  (Core)       │
 └─────────────┘     └──────────────┘     └───────────────┘
                           │
-                    ┌─────┴──────┐
-                    │            │
-               ┌────▼───┐  ┌────▼────┐
-               │Validate│  │ Export   │
-               │ Engine │  │ .rules  │
-               └────────┘  └─────────┘
+                    ┌─────┼──────┐
+                    │     │      │
+               ┌────▼──┐ ▼   ┌──▼─────┐
+               │Validate│ │   │ Export  │
+               │ Engine │ │   │ .rules │
+               └────────┘ │   └────────┘
+                     ┌────▼────┐
+                     │  Score  │
+                     │ Engine  │
+                     └─────────┘
 ```
 
 ---
@@ -282,9 +365,9 @@ SnortForge/
 - [x] Inline help tooltips for detection options
 - [x] PCRE flag checkboxes
 - [x] HTTP URI content modifier
-- [ ] Multi-content rule support (chained content matches)
-- [ ] Snort 3 syntax output mode
-- [ ] Rule performance scoring
+- [x] Multi-content rule support (chained content matches)
+- [x] Snort 3 syntax output mode
+- [x] Rule performance scoring
 - [ ] Dark/light theme toggle
 - [ ] Persistent storage (database backend)
 - [ ] Community template sharing
