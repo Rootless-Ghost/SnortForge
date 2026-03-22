@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/License-MIT-9ece6a?style=for-the-badge" alt="MIT License">
   <img src="https://img.shields.io/badge/Snort-IDS%2FIPS-f7768e?style=for-the-badge&logo=snort&logoColor=white" alt="Snort">
   <img src="https://img.shields.io/badge/Status-Active-9ece6a?style=for-the-badge" alt="Status">
-
+</p>
 
 
   A web-based application for building, validating, managing, and exporting Snort intrusion detection rules with a clean, dark-themed interface.
