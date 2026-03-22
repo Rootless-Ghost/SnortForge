@@ -6,7 +6,6 @@
 <p align="center">
   
   ### Snort IDS/IPS Rule Generator & Management Tool
-  
 </p>
 
 <p align="center">
