@@ -33,6 +33,10 @@ build/
 venv/
 env/
 .venv/
+.env
+
+# Flask
+instance/
 
 # IDE
 .vscode/
