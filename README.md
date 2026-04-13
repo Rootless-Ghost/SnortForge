@@ -108,7 +108,7 @@ pip install -r requirements.txt
 python3 app.py
 ```
 
-Then open your browser to **http://127.0.0.1:5000**
+Then open your browser to **http://127.0.0.1:5003**
 
 
 ##  Usage
@@ -378,6 +378,17 @@ SnortForge/
 - [ ] Dark/light theme toggle
 - [ ] Persistent storage (database backend)
 - [ ] Community template sharing
+
+## Integration with Nebula Forge
+
+SnortForge occupies the **Detect** phase of the Nebula Forge pipeline as the network signature engine.
+
+### detection-pipeline → SnortForge (IOC-to-rule fan-out)
+
+detection-pipeline automates the path from threat intelligence to deployed rules. When an IOC reaches a configured risk threshold — after enrichment via the Threat Intel Dashboard against VirusTotal and AbuseIPDB — detection-pipeline fans out simultaneously to SigmaForge, YaraForge, and SnortForge. For SnortForge, it submits rule parameters derived from the IOC (IP addresses, domains, signatures), producing a ready-to-deploy Snort 2 or Snort 3 rule.
+
+A single IOC enrichment run can produce — without manual intervention — a Snort rule in SnortForge, a YARA rule in YaraForge, and a Sigma rule in SigmaForge in one pass.
+
 
 ## Related Tools
 
