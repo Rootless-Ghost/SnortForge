@@ -52,3 +52,7 @@ Thumbs.db
 *.rules
 !templates/*.rules
 *.tmp
+
+# Generated output
+output/
+!output/.gitkeep
