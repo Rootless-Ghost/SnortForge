@@ -95,10 +95,10 @@ def _apply_option(key, value, rule):
                 elif k == "track": rule.threshold_track = v
                 elif k == "count":
                     try: rule.threshold_count = int(v)
-                    except: pass
+                    except (ValueError, TypeError): pass
                 elif k == "seconds":
                     try: rule.threshold_seconds = int(v)
-                    except: pass
+                    except (ValueError, TypeError): pass
     elif key in mapping and mapping[key]:
         attr, typ = mapping[key]
         try:
