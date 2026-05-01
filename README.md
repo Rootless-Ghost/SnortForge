@@ -110,6 +110,15 @@ python3 app.py
 
 Then open your browser to **http://127.0.0.1:5003**
 
+### Docker (standalone)
+
+```bash
+docker build -t snortforge .
+docker run -p 5003:5003 snortforge
+```
+
+Open http://localhost:5003
+
 
 ##  Usage
 
