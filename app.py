@@ -276,4 +276,4 @@ if __name__ == "__main__":
     # Enable it explicitly for development by setting FLASK_DEBUG=1 (or "true").
     debug_flag = os.getenv("FLASK_DEBUG", "0").lower()
     debug = debug_flag in ("1", "true", "yes", "on")
-    app.run(debug=debug, port=5003)
+    app.run(debug=debug, host="0.0.0.0", port=5003)
