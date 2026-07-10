@@ -29,19 +29,19 @@ SnortForge streamlines the creation and management of Snort IDS/IPS rules. Wheth
 
 ### Key Capabilities
 
-- **Visual Rule Builder** — Form-based rule creation with real-time live preview
-- **Multi-Content Chaining** — Chain multiple content matches with independent modifiers (depth, offset, distance, within) for precise, multi-stage detection
-- **Snort 2 / Snort 3 Toggle** — Switch between Snort 2 and Snort 3 syntax output with a single toggle — sticky buffers, `detection_filter`, and space-separated modifiers handled automatically
-- **Rule Performance Scoring** — 8-criteria analysis engine scores rules 0–100 with letter grades and actionable optimization tips for detection engineering best practices
-- **Inline Help Tooltips** — Hover `?` icons explain detection options, flow settings, and threshold behavior
-- **Syntax Validation** — Server-side validation catches errors and suggests best practices before deployment
-- **12 Detection Templates** — Pre-built rules for SQL injection, XSS, brute force, port scans, reverse shells, and more
-- **Rule Manager** — Bulk operations: edit, duplicate, delete, import, export
-- **Import/Export** — Read `.rules` files and export for direct Snort 2 or Snort 3 deployment
-- **PCRE Flag Checkboxes** — Set regex flags visually instead of typing `/pattern/flags` manually
-- **HTTP URI / Header Matching** — Restrict content matches to the request URI or HTTP headers for web attack detection
-- **Multiple References** — Add CVE, Bugtraq, URL, and other reference types with structured input and validation
-- **Dark Theme** — Clean, spacious interface built for extended use
+- **Visual rule builder** with a live preview that updates as you fill in the form.
+- **Multi-content chaining.** Chain several content matches in a single rule, each carrying its own depth, offset, distance, and within modifiers for multi-stage detection.
+- **Snort 2 / Snort 3 toggle.** One switch flips the output syntax; sticky buffers, `detection_filter`, and space-separated modifiers are handled for you.
+- **Rule performance scoring** — an 8-criteria engine grades each rule 0–100 (letter grade A–F) and returns specific tips for tightening it.
+- **Inline help tooltips:** hover the `?` next to any detection option for a plain explanation of what it does and when to use it.
+- **Syntax validation** runs server-side, catching errors and flagging weak patterns before a rule ever reaches a sensor.
+- **12 detection templates** covering SQL injection, XSS, brute force, port scans, reverse shells, and more.
+- **Rule manager** for bulk edit, duplicate, delete, import, and export.
+- **Import/export:** read existing `.rules` files, then export clean rulesets for either Snort 2 or Snort 3.
+- **PCRE flag checkboxes** so you set regex flags visually instead of hand-typing `/pattern/flags`.
+- **HTTP URI / header matching** scopes content matches to the request URI or headers, which keeps web-attack rules from drowning in false positives.
+- **Multiple reference types** (CVE, Bugtraq, URL, and others) with structured, validated input.
+- **Dark theme** built for long sessions.
 
 
 
