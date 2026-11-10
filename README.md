@@ -6,6 +6,8 @@
 
 </div>
 
+> **Lab-grade tooling.** Built and tested in a home detection-engineering lab. Works as documented, but isn't hardened for production or multi-user deployment. See SECURITY.md for scope.
+
 <p align="center">
 <img src="https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white" alt="Python">
 <img src="https://img.shields.io/badge/Flask-3.0+-000000?logo=flask&logoColor=white" alt="Flask">
